@@ -50,12 +50,16 @@ cafe_c = np.array([
 cafe_A_ub = np.array([
     [cubita_super_colombiano_mix, cubita_deluxe_colombiano_mix],
     [cubita_super_cubano_mix, cubita_deluxe_cubano_mix],
-    [tiempo_de_produccion_super, tiempo_de_produccion_deluxe]
+    [tiempo_de_produccion_super, tiempo_de_produccion_deluxe],
+    [-1,0],
+    [0,-1],
 ])
 cafe_b_ub = np.array([
     total_cafe_colombiano,
     total_cafe_cubano,
     total_de_produccion_super,
+    0,
+    0,
 ])
 
 cafe_A_eq = None

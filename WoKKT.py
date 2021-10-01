@@ -122,27 +122,45 @@ def show_cafe_solution_report(cafe_super, cafe_deluxe):
     ganancia_hecha = cafe_c @ user_solution
     feasible_original_problem = cafe_solution.success
     feasible_user_solution = is_feasible_solution(user_solution, cafe_A_ub, cafe_b_ub, cafe_A_eq, cafe_b_eq)
-    if feasible_original_problem:
-        print("La ganancia máxima es",ganancia_max)
-        print("Solución esperada de café super:" ,true_cafe_super)
-        print("Solución esperada de café deluxe:",true_cafe_deluxe)
-    else:
-        print("El problema original no pudo ser resuelto debido a", solution_meaning[cafe_solution.status])    
-    print()
+    feasible_answer = True
+
     if feasible_user_solution:
         print("La ganancia recibida fue",ganancia_hecha)
         print("Solución dada de café super:" ,cafe_super)
         print("Solución dada de café deluxe:",cafe_deluxe)
     else:
         print("Tu solución no cumple con las restricciones")
+        feasible_answer = False
+    
+    if feasible_answer:
+        if ganancia_max>ganancia_hecha*4:
+            print('Tu solucion es bastante mala con respecto a la gancia máxima posible,es menos que la cuarta parte.La ganancia máxima era de',ganancia_max)
+        elif ganancia_max>ganancia_hecha*2:
+            print('Tu solucion es mala con respecto a la gancia máxima posible,es menos de la mitad.La ganancia máxima era de',ganancia_max)
+       
+        elif ganancia_max<ganancia_hecha*1.5:
+            print('Tu solucion es bastante buena la ganancia máxima era de',ganancia_max)
+        elif ganancia_max<ganancia_hecha+5:
+            print('Tu solucion es optima')
+
+
+
+    else:
+        if feasible_original_problem:
+
+            print("La ganancia máxima es",ganancia_max)
+            print("Solución esperada de café super:" ,true_cafe_super)
+            print("Solución esperada de café deluxe:",true_cafe_deluxe)
+        else:
+            print("El problema original no pudo ser resuelto debido a", solution_meaning[cafe_solution.status])    
+        print()
+   
 
 def run():
     
     print("Bienvenidos a la Fábrica de Café .")
-    name = input("Escriba su nombre: ")
     
-    print(f"Hola {name} entonces, como nuevo jefe de operaciones de la")
-    print(f"fábrica de café se le asigna la siguiente tarea:")
+    print(f"Como nuevo jefe de operaciones de la fábrica de café se le asigna la siguiente tarea:")
     print()
     print(program_description)
     print()

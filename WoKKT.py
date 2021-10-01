@@ -85,13 +85,19 @@ def solve_linear_problem(maximizar, c, A_ub=None, b_ub=None, A_eq=None, b_eq=Non
         sol.fun = -sol.fun
     return sol
 
-def is_feasible_solution(sol, A_ub=None, b_ub=None, A_eq=None, b_eq=None):
-    feasible = True
+def get_infringed_rules(sol, A_ub=None, b_ub=None, A_eq=None, b_eq=None):
+    infringed_rules = { "ub" : [], "eq" : []}
+
+    # Determina las condiciones de desigualdad infringidas
     if A_ub is not None and A_ub.any() and b_ub is not None and b_ub.any():
-        feasible = feasible and all(A_ub @ sol <= b_ub)
+        mul = A_ub @ sol <= b_ub
+        infringed_rules["ub"] = [i + 1 for i in range(len(mul)) if not mul[i]]
+    # Determina las condiciones de igualdad infringidas
     if A_eq is not None and A_eq.any() and b_eq is not None and b_eq.any():
-        feasible = feasible and all(A_eq @ sol == b_eq)
-    return feasible
+        mul = A_eq @ sol == b_eq
+        infringed_rules["eq"] = [i + 1 for i in range(len(mul)) if not mul[i]]
+
+    return infringed_rules
 
 # Solucion al problema
 cafe_solution = solve_linear_problem(True, cafe_c, cafe_A_ub, cafe_b_ub, cafe_A_eq, cafe_b_eq)
@@ -121,7 +127,8 @@ def show_cafe_solution_report(cafe_super, cafe_deluxe):
     ganancia_max = cafe_solution.fun
     ganancia_hecha = cafe_c @ user_solution
     feasible_original_problem = cafe_solution.success
-    feasible_user_solution = is_feasible_solution(user_solution, cafe_A_ub, cafe_b_ub, cafe_A_eq, cafe_b_eq)
+    infringed_rules = get_infringed_rules(user_solution, cafe_A_ub, cafe_b_ub, cafe_A_eq, cafe_b_eq)
+    feasible_user_solution = len(infringed_rules["eq"]) + len(infringed_rules["ub"]) == 0
     feasible_answer = True
 
     if feasible_user_solution:
@@ -129,7 +136,14 @@ def show_cafe_solution_report(cafe_super, cafe_deluxe):
         print("Solución dada de café super:" ,cafe_super)
         print("Solución dada de café deluxe:",cafe_deluxe)
     else:
-        print("Tu solución no cumple con las restricciones")
+        print("Tu solución no cumple con las restricciones:")
+        if len(infringed_rules["ub"]) > 0:
+            print("De desigualdad en las condiciones: " + str(infringed_rules["ub"]))
+
+        if len(infringed_rules["eq"]) > 0:
+            print("De igualdad en las condiciones: " + str(infringed_rules["eq"]))
+
+        print()
         feasible_answer = False
     
     if feasible_answer:

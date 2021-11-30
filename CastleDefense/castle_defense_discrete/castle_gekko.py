@@ -1,7 +1,11 @@
+"""
+Solución del modelo del juego usando GEKKO 
+"""
+
 from typing import Callable
 from gekko import GEKKO
 import gekko
-from Castle import Castillo, Juego, Modelo
+from castle import Castillo, Juego, Modelo
 import numpy as np
 
 class ModeloGEKKO(Modelo):

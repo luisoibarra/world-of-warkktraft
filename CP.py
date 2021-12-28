@@ -1,5 +1,6 @@
+from typing import Callable, List, Optional, Tuple
 from gekko import GEKKO
-import gekko
+import numpy as np
 
     
 def mormont_house():
@@ -138,8 +139,107 @@ def targaryen_house():
     else:
         print('Su solución no es factible.El costo minimo posible es',max )
 
+class ProblemManager:
+    def __init__(self, solver:Callable[[Optional[float],], float], args_fetcher:Callable[[], Tuple[float,]]) -> None:
+        self.solver = solver
+        self.args_fetcher = args_fetcher
+
+    def solve(self, *args):
+        max = self.solver(*args)
+        return max
+
+    def compare(self):
+        max, vector_variables = self.solve()
+        
+        print("Asignación óptima:")
+        for v in vector_variables:
+            print(v.name, ":", v.value)
+        
+        args = self.args_fetcher()
+
+        try:        
+            user_max, _ = self.solve(*args)
+            print('El valor alcanzado con su asiganción es de', user_max)
+            if max > user_max * 4:
+                print('Tu solución es bastante mala con respecto al valor óptimo, es menos que la cuarta parte. El valor óptimo era de', max)
+            elif max>user_max * 2:
+                print('Tu solución es mala con respecto a valor óptimo, es menos de la mitad. El valor óptimo era de', max)
+        
+            elif max>user_max * 1.5:
+                print('Tu solución es bastante buena, el valor óptimo era de', max)
+            elif max < user_max + 5:
+                print('Tu solución es óptima')
+            else:
+                print('Tu solución es muy buena,casi en lo óptimo, pero el valor óptimo posible alcanzado es', max)
+        except Exception as ex:
+            print('Su solución no es factible. El valor óptimo es', max)
+
+def stark_house_solve(*waves_values):
+
+    modelo = GEKKO(remote=False)
+    modelo.options.SOLVER = 1  # APOPT is an MINLP solver
+    modelo.options.LINEAR = 1 # Is a MILP
+
+    # Constantes
+    wave_strength_i = np.array([2000, 3000, 4000, 6000, 8000, 10000, 10000, 6000, 4000, 3000, 2000, 2000])
+    waves_amount = len(wave_strength_i)
+    max_refuge_capacity = 5000
+    arya_threshold = 1000
+
+    # Variables
+    men_sent_wave_i = np.array([modelo.Var(lb=0, integer=True, name=f"Hombres enviados oleada {i}") for i in range(waves_amount)])
+    # Aux variables para eliminar módulo
+    positive_z_i = np.array([modelo.Var(lb=0, name=f"Diferencia positiva oleada {i+1}-{i}") for i in range(waves_amount-1)])
+    negative_z_i = np.array([modelo.Var(ub=0, name=f"Diferencia negativa oleada {i+1}-{i}") for i in range(waves_amount-1)])
+
+    # Restricciones
+    def z_i(i):
+        return men_sent_wave_i[i+1] - men_sent_wave_i[i]
+
+    def all_men_k(k):
+        """
+        Devuelve la expresión de todos los hombres enviados hasta la oleada k
+        """
+        return (k+1)*men_sent_wave_i[0] + modelo.sum([(k - i)*(z_i(i)) for i in range(k)])
+
+    def all_wave_strength_k(k):
+        """
+        Devuelve la expresión de toda la fuerza de las oleadas hasta la oleada k
+        """
+        return modelo.sum(wave_strength_i[:k+1])
+    
+    for i in range(waves_amount-1):
+        modelo.Equation(z_i(i) == positive_z_i[i] + negative_z_i[i])
+
+    for i in range(waves_amount):
+        modelo.Equation(all_men_k(i) - all_wave_strength_k(i) <= max_refuge_capacity)
+        modelo.Equation(all_men_k(i) - all_wave_strength_k(i) >= 0)
+
+    # Restriccion de Arya
+    modelo.Equation(all_wave_strength_k(waves_amount-1) - all_men_k(waves_amount-2) >= arya_threshold) 
+
+    # Restricciones de usuario
+    for i,restr in enumerate(waves_values):
+        modelo.Equation(men_sent_wave_i[i] == restr)
+
+    # Función objetivo
+    modelo.Minimize(modelo.sum([0.75 * (positive_z_i[i] - negative_z_i[i]) + 0.25 * z_i(i) for i in range(waves_amount-1)]))
+
+    modelo.solve(disp=False)
+
+    return modelo.options.OBJFCNVAL, men_sent_wave_i
+
+def stark_house_input():
+    print("Introduce la cantidad de guerreros a enviar en cada oleada:")
+    guerreros = []
+    for i in range(12):
+        guerreros.append(int(input(f"Oleada {i+1}: ")))
+    return guerreros
+
 def main():
     # mormont_house()
-    targaryen_house()
+    # targaryen_house()
+    problem = ProblemManager(stark_house_solve, stark_house_input)
+    problem.compare()
 
 main()

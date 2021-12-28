@@ -603,8 +603,70 @@ $$
 		\subsubsection{Solución}\label{subsubsec:sol_ejer_5}
 %-----------------------------------------------------------------------------------
 
-SOLUCIÓN DEL EJERCICIO
+\textbf{Variables de decisión:}
 
+\begin{itemize}
+	\item $h_i$: Cantidad de soldados enviados en la oleada i.
+\end{itemize}
+
+Sea $z_i$ la diferencia de hombres entre la oleada $i+1$ y la oleada $i$
+
+\begin{itemize}
+
+	\item $h_{i+1} = h_i + z_i$
+	\item $h_{i} = h_0 + \sum_{k=1}^{k-1} z_k$
+	
+\end{itemize}
+
+\textbf{Restricciones:}
+
+Se quiere que en cada oleada la cantidad de soldados sea mayor que la cantidad de caminantes blancos:
+
+$$
+\sum_{i=1}^{k} x_i = k h_0 + \sum_{i=1}^{k-1}(k-i)z_i \ge \sum_{i=1}^k d_i \qquad \forall k \in [1,...,12]
+$$
+
+Pero en cada oleada no pueden haber más de 5000 soldados superando a los caminantes blancos:
+
+$$
+k h_0 + \sum_{i=1}^{k-1}(k-i)z_i - \sum_{i=1}^k d_i \le 5000 \qquad \forall k \in [1,...,12]
+$$
+
+La cantidad de soldados enviados por oleadas tiene que ser no negativa:
+
+$$
+h_i \ge 0 \qquad \forall i \in [1,...,12]
+$$
+
+La restricción de la oleada final viene dado por la restricción siguiente, la cual representa la cantidad total de caminantes blancos hasta la oleada 12 restado con la cantidad total de soldados hasta la oleada 11:
+
+$$
+\sum_{i=1}^{12} d_i - 11 h_0 + \sum_{i=1}^{10}(10-i)z_i \ge 1000
+$$
+
+\textbf{Función objetivo:}
+
+Se quiere minimizar el cambio entre oleadas, el cambio está expresado en $z_i$, esta variable puede ser negativa o positiva, y por cada valor
+positivo se necesita contar 1 y por cada valor negativo se necesita aumentar en 0.5, lo cual se logra mediante la función módulo.
+
+$$
+\min \sum_{i=2}^{12} 0.75 |z_i| + 0.25 z_i
+$$
+
+\textbf{Detalles:}
+
+El problema no es lineal, debido a que contiene la función módulo. Se deja de tarea a los estdiantes cómo linealizar el problema.\\
+
+Pasos para linealización:
+
+\renewcommand{\theenumi}{\arabic{enumi}} % enumerate con números
+\begin{enumerate}
+	\item Crear variables $x_1, x_2$ por cada expresión dentro del módulo tal que $x_1 \ge 0$ y $x_2 \le 0$.
+	\item Sustituir en el problema la variable por: $x = x_1 + x_2$
+	\item Sustituir en el problema las expresiones con módulo con: $|x| = x_1 - x_2$
+\end{enumerate}
+
+De esta manera se linealiza el problema, ya que se puede demostrar que $x_1 = 0 \iff x_2 \neq 0$ si $x \neq 0$ lo que indica que ambas variables se comportan como la parte positiva y negativa respectivamente.
 
 %===================================================================================
 % Conclusiones
@@ -647,7 +709,7 @@ El ejercicio anterior tiene como objetivo introducir al estudiante en la represe
 \begin{ejer}
 	Investigar cómo se puede eliminar el módulo en un problema de optimización lineal. 
 \end{ejer}
-El ejercicio anterior dará pie a que los estudiantes busquen sobre el tema y se topen con las variables binarias, presentes en la programación lineal discreta.
+El ejercicio anterior dará pie a que los estudiantes investiguen cómo linealizar la función módulo para convertir el problema en uno lineal, lo cual es necesario para introducir los problemas en solucionadores.
 
 
 

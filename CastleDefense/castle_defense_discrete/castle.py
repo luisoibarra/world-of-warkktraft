@@ -61,8 +61,13 @@ class AtaqueEnemigo:
         self.poder = poder
 
 class EstrategiaEnemiga:
-    def __init__(self, ataques = List[Union[AtaqueEnemigo,int]]) -> None:
+    def __init__(self, ataques: List[Union[AtaqueEnemigo,int]]) -> None:
         self.ataques = [AtaqueEnemigo(x) if isinstance(x, int) else x for x in ataques]
+
+class Tarea:
+    def __init__(self, nombre: str, recursos: List[Recurso]) -> None:
+        self.nombre = nombre
+        self.recursos = recursos
 
 class Modelo:
     def solve(self):

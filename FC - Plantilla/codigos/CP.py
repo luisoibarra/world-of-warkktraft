@@ -416,7 +416,29 @@ def main():
     # solver = mormont_house_solve
     # inputer = mormont_house_input
     problem = ProblemManager(solver, inputer)
-    problem.compare()
+    args = argumentos_problema_4_2_equipo_2 = [
+    [ # Transporte de Armas
+        [8000,0,0],
+        [0,0,0],
+        [0,0,0]
+    ],
+    [ # Transporte de Comida
+        [0,0,0],
+        [0,0,0],
+        [0,0,30000]
+    ],
+    [ # Transporte de Soldados
+        [0,2500,2500],
+        [2500,0,0],
+        [2500,0,0]
+    ],
+    [ # Transporte de Fuego Valiryo
+        [0,0,0],
+        [0,25,25],
+        [0,25,25]
+    ],
+], True
+    problem.compare(args)
 
 
 main()

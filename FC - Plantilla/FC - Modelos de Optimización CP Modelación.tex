@@ -278,8 +278,6 @@ Esta pregunta se realizará con el objetivo de recordar conceptos relacionados c
 %-----------------------------------------------------------------------------------
 \section{Ejercicios}\label{sec:ejer}
 %-----------------------------------------------------------------------------------
-(Este segmento tiene una duración de $z_1$ minutos.)\\
-
 Se realiza una introducción a los ejercicios basada en la historia de la serie y en el contexto en que se encuentran, en la preparación de la la batalla contra los caminantes blancos.\\
 
 Los ejercicios se dividen por algunas de las diferente Casas que participaron en la batalla, para usar la temática de la clase práctica a nuestro favor y darle un mejor ambiente.\\
@@ -289,6 +287,7 @@ Una vez esté resuelto el modelo de cada ejercicio, se le pedirá a un integrant
 %-----------------------------------------------------------------------------------
 	\subsection{Casa Mormont}\label{subsec:ejer_1}
 %-----------------------------------------------------------------------------------
+(Este ejercicio tiene una duración de $10$ minutos.)\\
 
 En la preparación de la batalla se necesitan armas para que los guerreros puedan defenderse del ejército de caminantes blancos. Para esto se tienen escasos recursos, así que hay que usarlos sabiamente. Entre las reservas y el trabajo se logró reunir:
 
@@ -336,11 +335,89 @@ Este ejercicio es un sencillo problema de producción, en el cual se tienen mate
 		\subsubsection{Solución}\label{subsubsec:sol_ejer_1}
 %-----------------------------------------------------------------------------------
 
-SOLUCIÓN DEL EJERCICIO
+Inciso a)
+
+\textbf{Variables de decisión:}
+
+\begin{itemize}
+	\item $x_1$: Cantidad de espadas.
+	\item $x_2$: Cantidad de arcos.
+	\item $x_3$: Cantidad de catapultas.		
+\end{itemize}
+
+\textbf{Restricciones:}
+
+La cantidad de hierro disponible no puede ser superada:
+
+$$
+10x_1 + 2x_2 + 80x_3 \le 300
+$$
+
+La cantidad de hierro disponible no puede ser superada:
+
+$$
+2x_1 + 10x_2 + 100x_3 \le 400
+$$
+
+La cantidad de hierro disponible no puede ser superada:
+
+$$
+4x_1 + 5x_2 + 50x_3 \le 400
+$$
+
+Las cantidades tienen que ser no negativas:
+
+$$
+x_i \ge 0 \quad \forall i \in [1,2,3]
+$$
+
+\textbf{Función objetivo:}
+
+Se quiere maximizar el daño inflingido con las armas creadas.
+
+$$
+\max 15 * x_1 + 10 * x_2 + 80 * x_3
+$$
+
+Inciso b)
+
+\textbf{Variables de decisión:}
+
+\begin{itemize}
+	\item $x_i$: Cantidad de producto $i$.
+\end{itemize}
+
+\textbf{Restricciones:}
+
+\begin{itemize}
+	\item $b_j$: Cantidad de materia prima $j$.
+	\item $c_i$: Utilidad del producto $i$.
+	\item $a_{ij}$: Cantidad de materia prima $j$ necesitada por producto $i$.
+\end{itemize}
+
+Cumpliendo las restricciones de materia prima:
+
+$$
+\sum_{i=1} x_i a_{ij} \le b_j \quad \forall j
+$$
+
+Las cantidades tienen que ser no negativas:
+
+$$
+x_i \ge 0 \quad \forall i
+$$
+
+\textbf{Función objetivo:}
+
+$$
+\max \sum_{i=1} c_i x_i
+$$
 
 %-----------------------------------------------------------------------------------
 	\subsection{Casa Greyjoy}\label{subsec:ejer_2}
 %-----------------------------------------------------------------------------------
+(Este ejercicio tiene una duración de $10$ minutos.)\\
+
 Un importante recurso para la contienda es la comida. Los soldados y la mano de obra son muchos y cada uno necesita ser alimentado para poder trabajar y luchar contra los temibles caminantes blancos. Esta responsabilidad cae sobre Casa Greyjoy. Los cálculos estiman que para hacer una comida para una persona se necesitan:
 
 \begin{itemize}
@@ -447,6 +524,8 @@ $$
 %-----------------------------------------------------------------------------------
 	\subsection{Casa Targaryen}\label{subsec:ejer_3}
 %-----------------------------------------------------------------------------------
+(Este ejercicio tiene una duración de $10$ minutos.)\\
+
 El fuego valiryo posee un gran poder ofensivo, este fuego verde arde incluso en el agua y es incapaz de extinguirlo una vez se prende, solo terminando de arder cuando se consume completamente. Las armas imbuidas en este elemento presentan un poder ofensivo superior y además pueden ser usado como bombas incendiarias, así que la producción de este es indispensable. Para fabricar el fuego valiryo se necesita mezclar ciertos ingredientes cuyos nombres no fueron revelados, pero, se conoce la proporción de estos en diferentes recursos naturales:
 
 \begin{figure}[h!]%
@@ -492,14 +571,75 @@ Este ejercicio es un clásico problema de mezlca en el cual se tienen diferentes
 		\subsubsection{Solución}\label{subsubsec:sol_ejer_3}
 %-----------------------------------------------------------------------------------
 
-SOLUCIÓN DEL EJERCICIO
+\textbf{Variables de decisión:}
 
+\begin{itemize}
+	\item $x_1$: Cantidad de aceite de ballena.
+	\item $x_2$: Cantidad de polvo de dragón.
+	\item $x_3$: Cantidad de piel de caballo.
+	\item $x_4$: Cantidad de ingrediente 1.
+	\item $x_5$: Cantidad de ingrediente 2.
+	\item $x_6$: Cantidad de ingrediente 3.
+\end{itemize}
+
+\textbf{Restricciones:}\\
+
+El total de ingrediente 1 representa el 30\%:
+
+$$
+0.4 x_1 + 0.1 x_2 + 0.15 x_3 + x_4 = 0.3*100
+$$
+
+El total de ingrediente 2 representa el 20\%:
+
+$$
+0.1 x_1 + 0.05 x_2 + 0.5 x_3 + x_5 = 0.2*100
+$$
+
+El total de ingrediente 3 representa el 50\%:
+
+$$
+0.3 x_1 + 0.5 x_2 + 0.05 x_3 + x_6 = 0.5*100
+$$
+
+La cantidad de los ingredientes destilados no puede superar la reserva de cada uno:
+
+$$
+x_4 \le 15
+$$
+$$
+x_5 \le 30
+$$
+$$
+x_6 \le 10
+$$
+
+La cantidad total creada tiene que cumplir con la demanda, los ingredientes tienen no se usan completamente:
+
+$$
+0.8 x_1 + 0.65 x_2 + 0.55 x_3 + x_4 + x_5 + x_6 \le 100
+$$
+
+Las cantidades tienen que ser no negativas:
+
+$$
+x_i \ge 0 \quad \forall i
+$$
+
+\textbf{Función objetivo:}
+
+Se quiere minimizar el costo de producir el fuego valiryo. Al costo de comprar los materiales se le añade el costo de purificar la mezcla de los residuos.
+
+$$
+\min 40 x_1 + 70 x_2 + 30 x_3 + 5 (0.2 x_1 + 0.35 x_2 + 0.45 x_3)
+$$
 
 \textbf{Receso} (5 minutos)
 
 %-----------------------------------------------------------------------------------
 	\subsection{Casa Baratheon}\label{subsec:ejer_4}
 %-----------------------------------------------------------------------------------
+(Este ejercicio tiene una duración de $10$ minutos.)\\
 
 Es hora de reunir todos los recursos y tropas. Para esto se conoce que hacen falta trasladar las armas, comida, soldados y fuego valiryo hacia diferentes puntos intermedios para finalmente llegar a Winterfell. El traslado está condicionado por diferentes situaciones, clima, calidad del camino, tipo de recurso, que hacen que se tenga un desgaste de los recursos en el traslado en dependencia del destino. Este desgaste se observa:
 
@@ -642,6 +782,7 @@ $$
 %-----------------------------------------------------------------------------------
 	\subsection{Casa Stark}\label{subsec:ejer_5}
 %-----------------------------------------------------------------------------------
+(Este ejercicio tiene una duración de $15$ minutos.)\\
 
 Ya se encuentran todos los recursos en Winterfell, listos para la batalla, el frío y la oscuridad cubren todo. Los exploradores regresan de su misión informando que los caminantes blancos atacarán en 12 oleadas y calculan el estimado de fuerza de cada una de ellas:
 
@@ -695,8 +836,70 @@ $$
 		\subsubsection{Solución}\label{subsubsec:sol_ejer_5}
 %-----------------------------------------------------------------------------------
 
-SOLUCIÓN DEL EJERCICIO
+\textbf{Variables de decisión:}
 
+\begin{itemize}
+	\item $h_i$: Cantidad de soldados enviados en la oleada i.
+\end{itemize}
+
+Sea $z_i$ la diferencia de hombres entre la oleada $i+1$ y la oleada $i$
+
+\begin{itemize}
+
+	\item $h_{i+1} = h_i + z_i$
+	\item $h_{i} = h_0 + \sum_{k=1}^{k-1} z_k$
+	
+\end{itemize}
+
+\textbf{Restricciones:}
+
+Se quiere que en cada oleada la cantidad de soldados sea mayor que la cantidad de caminantes blancos:
+
+$$
+\sum_{i=1}^{k} x_i = k h_0 + \sum_{i=1}^{k-1}(k-i)z_i \ge \sum_{i=1}^k d_i \qquad \forall k \in [1,...,12]
+$$
+
+Pero en cada oleada no pueden haber más de 5000 soldados superando a los caminantes blancos:
+
+$$
+k h_0 + \sum_{i=1}^{k-1}(k-i)z_i - \sum_{i=1}^k d_i \le 5000 \qquad \forall k \in [1,...,12]
+$$
+
+La cantidad de soldados enviados por oleadas tiene que ser no negativa:
+
+$$
+h_i \ge 0 \qquad \forall i \in [1,...,12]
+$$
+
+La restricción de la oleada final viene dado por la restricción siguiente, la cual representa la cantidad total de caminantes blancos hasta la oleada 12 restado con la cantidad total de soldados hasta la oleada 11:
+
+$$
+\sum_{i=1}^{12} d_i - 11 h_0 + \sum_{i=1}^{10}(10-i)z_i \ge 1000
+$$
+
+\textbf{Función objetivo:}
+
+Se quiere minimizar el cambio entre oleadas, el cambio está expresado en $z_i$, esta variable puede ser negativa o positiva, y por cada valor
+positivo se necesita contar 1 y por cada valor negativo se necesita aumentar en 0.5, lo cual se logra mediante la función módulo.
+
+$$
+\min \sum_{i=2}^{12} 0.75 |z_i| + 0.25 z_i
+$$
+
+\textbf{Detalles:}
+
+El problema no es lineal, debido a que contiene la función módulo. Se deja de tarea a los estdiantes cómo linealizar el problema.\\
+
+Pasos para linealización:
+
+\renewcommand{\theenumi}{\arabic{enumi}} % enumerate con números
+\begin{enumerate}
+	\item Crear variables $x_1, x_2$ por cada expresión dentro del módulo tal que $x_1 \ge 0$ y $x_2 \le 0$.
+	\item Sustituir en el problema la variable por: $x = x_1 + x_2$
+	\item Sustituir en el problema las expresiones con módulo con: $|x| = x_1 - x_2$
+\end{enumerate}
+
+De esta manera se linealiza el problema, ya que se puede demostrar que $x_1 = 0 \iff x_2 \neq 0$ si $x \neq 0$ lo que indica que ambas variables se comportan como la parte positiva y negativa respectivamente.
 
 %===================================================================================
 % Conclusiones
@@ -704,7 +907,7 @@ SOLUCIÓN DEL EJERCICIO
 \section{Conclusiones} \label{sec:conc}
 %-----------------------------------------------------------------------------------
 
-(Este segmento tiene una duración de cierta cantidad minutos.)\\
+(Este segmento tiene una duración de $10$ minutos.)\\
  
 %Se resumirán los resultados más destacados ejercitados en la actividad.
 %
@@ -719,7 +922,8 @@ Luego se les explicará a los alumnos que en próximas clases se les dará el co
 %-----------------------------------------------------------------------------------
 \section{Estudio independiente} \label{independ}
 %-----------------------------------------------------------------------------------
-
+(Este segmento tiene una duración de $5$ minutos.)\\
+ 
 %Orientar y comentar los ejercicios propuestos que se deseen.
 %
 %\begin{ejer}
@@ -739,7 +943,7 @@ El ejercicio anterior tiene como objetivo introducir al estudiante en la represe
 \begin{ejer}
 	Investigar cómo se puede eliminar el módulo en un problema de optimización lineal. 
 \end{ejer}
-El ejercicio anterior dará pie a que los estudiantes busquen sobre el tema y se topen con las variables binarias, presentes en la programación lineal discreta.
+El ejercicio anterior dará pie a que los estudiantes investiguen cómo linealizar la función módulo para convertir el problema en uno lineal, lo cual es necesario para introducir los problemas en solucionadores.
 
 
 

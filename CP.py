@@ -74,6 +74,93 @@ def mormont_house():
     else:
         print('Su solución no es factible.El daño máxima posible es',max )
 
+def greyjoy_house():
+
+    def greyjoy_house_solve(trigo=None, encurtidos=None, ganado=None, agua=None):
+        total_ppl = 1000
+        proteinas = 60 * total_ppl
+        carbohidratos = 120 * total_ppl
+        aceite = 20 * total_ppl
+        agua = 1.5 * total_ppl
+
+        totals = [proteinas, carbohidratos, aceite]
+
+        nutrientes_costo = [[10, 40, 20, 10],
+                            [100, 10, 50, 60],
+                            [20, 30, 10, 30],
+                            [0, 0, 0, 5]
+        ]
+
+        modelo = GEKKO(remote=False)
+        modelo.options.SOLVER = 1
+        modelo.options.LINEAR = 1
+
+        test = True if not trigo is None and not encurtidos is None and not ganado is None and not agua is None else False
+        
+        _trigo = modelo.Var(lb=0, integer=True, name='trigo')
+        _encurtidos = modelo.Var(lb=0, integer=True, name='encurtidos')
+        _ganado = modelo.Var(lb=0, integer=True, name='ganado')
+        _agua = modelo.Var(lb=0, integer=True, name='agua')
+
+        e_vars = [_trigo, _ganado, _encurtidos, _agua]
+
+        eq = 0
+        for i in range(3):
+            for j in range(3):
+                eq += e_vars[j] * nutrientes_costo[j][i]
+
+            modelo.Equation(eq >= totals[i])
+            eq = 0
+
+        modelo.Equation(_agua >= agua)
+
+        if test:
+            modelo.Equation(_trigo==trigo)
+            modelo.Equation(_encurtidos==encurtidos)
+            modelo.Equation(_ganado==ganado)
+            modelo.Equation(_agua==agua)
+
+        def f(x, y, z, w):
+            return x * nutrientes_costo[0][3] + y * nutrientes_costo[1][3] + z * nutrientes_costo[2][3] + w * nutrientes_costo[3][3]
+
+        modelo.Minimize(f(_trigo, _ganado, _encurtidos, _agua))
+
+        try:
+            modelo.solve(disp=False)
+
+        except:
+            return -1
+
+        return modelo.options.OBJFCNVAL
+
+    min = greyjoy_house_solve()
+    print('Segun tu habilidad como gastronomo, que cantidad de alimentos se deberia producir')
+    trigo = int(input('Trigo:'))
+    encurtidos = int(input('Encurtidos:'))
+    ganado = int(input('Ganado:'))
+    agua = int(input('Agua:'))
+
+    user_min = greyjoy_house_solve(trigo, encurtidos, ganado, agua)
+    if user_min > 0:
+        print('El costo minimo de su produccion es de ', user_min)
+        if min*4<user_min:
+            print('Tu solución es bastante mala con respecto al costo mínimo posible, es cuatro veces mayor.El costo mínimo era de',max)
+        elif min*2<user_min:
+            print('Tu solución es mala con respecto a daño máxima posible,es mas de el doble.El costo mmínimo era de',max)
+       
+        elif min*1.5<user_min:
+            print('Tu solución es bastante buena, el costo mínimo era de',min)
+        elif min<user_min+5:
+            print('Tu solución es óptima')
+        else:
+            print('Tu solución es muy buena,casi en lo óptimo,pero el daño máximo posible alcanzado es, ' ,max)
+        
+        
+    else:
+        print('Su solución no es factible.El costo minimo posible es',min )
+        
+
+
 def targaryen_house():
     def targaryen_house_solve(aceite=None,dragon=None,caballo=None):
         total = 100
@@ -138,6 +225,146 @@ def targaryen_house():
         
     else:
         print('Su solución no es factible.El costo minimo posible es',max )
+
+def baratheon_house():
+    names = ['armas', 'comida', 'soldados', 'fuego_valiryo']
+
+    def baratheon_house_solve(recursos_caminos=None, preservar_caminos=False):
+        necesario_recursos = [8000, 30000, 10000, 100]
+        costo_caminos = [
+            [
+                [5, 10, 7],
+                [10, 20, 10],
+                [7, 10, 7]
+            ],
+            [
+                [25, 20, 15],
+                [20, 17, 10],
+                [15, 10, 5]
+            ],
+            [
+                [10, 7, 7],
+                [7, 10, 9],
+                [7, 9, 8]
+            ],
+            [
+                [30, 25, 25],
+                [25, 5, 5],
+                [25, 5, 5]
+            ]
+        ]
+        min_por_camino = 3500
+
+        modelo = GEKKO(remote=False)
+        modelo.options.SOLVER = 1  # APOPT is an MINLP solver
+        modelo.options.LINEAR = 1 # Is a MILP
+
+        test = True if not recursos_caminos is None else False
+
+
+        _vars = [[[None for _ in range(3)] for _ in range(3)] for _ in range(4)]
+
+        for i in range(len(_vars)):
+            for j in range(len(_vars[i])):
+                for l in range(len(_vars[i][j])):
+                    _vars[i][j][l] = modelo.Var(lb=0, integer=True, name=(names[i] + '_' + str(j) + '_' + str(l)))
+
+        eq = 0
+        for i in range(len(_vars)):
+            for j in range(len(_vars[i])):
+                for l in range(len(_vars[i][j])):
+                    eq += _vars[i][j][l]
+
+            modelo.Equation(eq >= necesario_recursos[i])
+            eq = 0
+
+        if preservar_caminos:
+            i = j = l = 0
+            for j in range(len(_vars[0])):
+                for l in range(len(_vars[0][j])):
+                    for i in range(len(_vars)):
+                        eq += _vars[i][j][l]
+
+                    modelo.Equation(eq >= min_por_camino)
+                    eq = 0
+
+        if test:
+            for i in range(len(_vars)):
+                for j in range(len(_vars[i])):
+                    for l in range(len(_vars[i][j])):
+                        modelo.Equation(recursos_caminos[i][j][l]==_vars[i][j][l])
+
+        def f(matrix):
+            ret = 0
+            for i in range(len(matrix)):
+                for j in range(len(matrix[i])):
+                    for l in range(len(matrix[i][j])):
+                        ret += matrix[i][j][l] * costo_caminos[i][j][l]
+
+            return ret
+
+        modelo.Minimize(f(_vars))
+
+        try:
+            modelo.solve(disp=False)
+        
+        except Exception:
+            return -1
+
+        return modelo.options.OBJFCNVAL
+
+    print('Se intentara preservar los caminos?')
+    print('1 - Si')
+    print('2 - No')
+    while True:
+        raw = input()
+        try:
+            ans = int(raw)
+        
+        except:
+            print('Escriba una entrada correcta')
+
+        if ans == 1:
+            preservar = True
+            break
+
+        elif ans == 2:
+            preservar = False
+            break
+
+        else:
+            print('Escriba una entrada correcta')
+
+
+    min = baratheon_house_solve(preservar_caminos=preservar)
+    print('Segun el analisis que haz realizado sobre los caminos, cual seria la distribucion de recursos a enviar por cada ruta?')
+    print()
+    user_ans = [[[0 for _ in range(3)] for _ in range(3)] for _ in range(4)]
+    for i in range(len(user_ans)):
+        for j in range(len(user_ans[i])):
+            for l in range(len(user_ans[i][j])):
+                user_ans[i][j][l] = int(input('Escriba la cantidad de ' + names[i] + ' a enviar por la ruta comenzando en el lugar 1.' + str(j + 1) + ' y terminando en el lugar 2.' + str(l + 1) + ': '))
+
+    user_min = baratheon_house_solve(user_ans, preservar)
+    if user_min > 0:
+        print('El costo minimo de su produccion es de ', user_min)
+        if min*4<user_min:
+            print('Tu solución es bastante mala con respecto al costo mínimo posible, es cuatro veces mayor.El costo mínimo era de',max)
+        elif min*2<user_min:
+            print('Tu solución es mala con respecto a daño máxima posible,es mas de el doble.El costo mmínimo era de',max)
+       
+        elif min*1.5<user_min:
+            print('Tu solución es bastante buena, el costo mínimo era de',min)
+        elif min<user_min+5:
+            print('Tu solución es óptima')
+        else:
+            print('Tu solución es muy buena,casi en lo óptimo,pero el daño máximo posible alcanzado es, ' ,max)
+        
+        
+    else:
+        print('Su solución no es factible.El costo minimo posible es',min )
+
+
 
 class ProblemManager:
     def __init__(self, solver:Callable[[Optional[float],], float], args_fetcher:Callable[[], Tuple[float,]]) -> None:
@@ -239,7 +466,10 @@ def stark_house_input():
 def main():
     # mormont_house()
     # targaryen_house()
+    # greyjoy_house()
+    # baratheon_house()
     problem = ProblemManager(stark_house_solve, stark_house_input)
     problem.compare()
+
 
 main()

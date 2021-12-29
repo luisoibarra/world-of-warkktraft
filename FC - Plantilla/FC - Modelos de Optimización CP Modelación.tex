@@ -470,21 +470,21 @@ Este ejercicio es un sencillo problema de dieta, en el cual se tienen alimentos 
 
 \begin{itemize}
 
-\item $V_{i}$ : El valor de costo del producto $i$.
+\item $V_{i}$ : El costo del producto $i$.
 
-\item $P_{i}$ : Cantidad de prote\'inas que contiene el producto $i$.
+\item $P_{i}$ : Cantidad de proteínas que contiene el producto $i$.
 
 \item $C_{i}$ : Cantidad de carbohidratos que contiene el producto $i$.
 
 \item $A_{i}$ : Cantidad de aceite que contiene el producto $i$.
 
-\item $N_{Y}$ : Cantidad del nutriente $Y$ por persona ($Y$ se\'ria igual a $P$, $C$, $A$ o $Ag$ para prote\'inas, carbohidratos , aceite y agua respectivamente).
+\item $N_{Y}$ : Cantidad del nutriente $Y$ por persona ($Y$ sería igual a $P$, $C$, $A$ o $Ag$ para proteínas, carbohidratos, aceite y agua respectivamente).
 
 \item $T$ : Total de personas.
 
 \end{itemize}
 
-\textbf{Variables de Decisi\'on:}
+\textbf{Variables de Decisión:}
 
 \begin{itemize}
 
@@ -492,9 +492,9 @@ Este ejercicio es un sencillo problema de dieta, en el cual se tienen alimentos 
 
 \end{itemize}
 
-\textbf{Funci\'on objetivo:}
+\textbf{Función objetivo:}
 
-Se desea hallar, cumpliendo los requisitos requeridos para los alimentos de cada persona, el menor costo de producci\'on.
+Se desea hallar, cumpliendo los requisitos requeridos para los alimentos de cada persona, el menor costo de producción.
 
 $$
 \min \sum^{4}_{i=1} V_{i}X_{i}
@@ -502,7 +502,7 @@ $$
 
 \textbf{Restricciones:}
 
-Los requisitos para una comida satisfactoria por persona quedan dados en la descripci\'on del problema, pero quedan descritos de la siguiente forma:
+Los requisitos para una comida satisfactoria por persona quedan dados en la descripción del problema, pero quedan descritos de la siguiente forma:
 
 $$
 \sum^{4}_{i=1} X_{i} C_{i} \geq N_{C} T
@@ -518,6 +518,12 @@ $$
 
 $$
 X_{4} \geq N_{Ag} T
+$$
+
+Las cantidades tienen que ser no negativas:
+
+$$
+X_i \ge 0 \quad \forall i
 $$
 
 
@@ -739,27 +745,25 @@ Este ejercicio está basado en el problema de transporte, en el cual se tienen v
 %-----------------------------------------------------------------------------------
 
 
-\textbf{Variables}
+\textbf{Datos constantes}
 
 \begin{itemize}
 
-\item $D_{i, j, l}$ : Desgaste causado al camino por el transporte del recurso $i$ partiendo del lugar $1 + j/10$ hasta el lugar $2 + l/10$.
+\item $D_{i, j, l}$ : Desgaste causado al camino por el transporte del recurso $i$ partiendo del lugar inicial $j$ hasta el lugar final $l$.
 
 \item $T_{i}$ : Total necesario del recurso $i$.
 
-\item $M_{j, l}$ : Cantidad de recursos m\'inima que debe pasar por el camino partiendo del lugar $1+ j/10$ hasta el lugar $2+l/10$. (Dato del inciso b solamente)
-
 \end{itemize}
 
-\textbf{Variables de decisi\'on:}
+\textbf{Variables de decisión:}
 
 \begin{itemize}
-\item $X_{i,j,l}$ : Cantidad del recurso $i$ a ser transportado partiendo del lugar $1 + j /10$ hasta el lugar $2 + l /10$.
+\item $X_{i,j,l}$ : Cantidad del recurso $i$ a ser transportado partiendo del lugar inicial $j$ hasta el lugar final $l$.
 \end{itemize}
 
-\textbf{Funci\'on objetivo:}
+\textbf{Función objetivo:}
 
-Se desea hallar la mejor distribuci\'on de env\'io de los recursos por los distintos caminos de forma tal que el desgaste de los caminos sea lo menor posible.
+Se desea hallar la mejor distribución de envío de los recursos por los distintos caminos de forma tal que el desgaste de los caminos sea lo menor posible.
 
 $$
 \min \sum^{4}_{i=1} \sum^{3}_{j=1} \sum^{3}_{l=1} X_{i, j, l} D_{i, j, l}
@@ -773,10 +777,16 @@ $$
 \sum^{3}_{j=1} \sum^{3}_{l=1} X_{i, j, l} \geq T_{i} \enspace \forall i
 $$
 
-Se necesita tambi\'en que por cada camino pasen al menos 3500 unidades de cualquier recurso para mitigar el desgaste de los caminos. (Parte del inciso b solamente)
+Las cantidades tienen que ser no negativas:
 
 $$
-\sum^{4}_{i=1} X_{i, j, l} \geq M_{j, l} \enspace \forall j, l
+X_{i, j, l} \geq 0 \enspace \forall i, j, l
+$$
+
+Se necesita también que por cada camino pasen al menos 3500 unidades de cualquier recurso para mitigar el desgaste de los caminos. (Parte del inciso b solamente)
+
+$$
+\sum^{4}_{i=1} X_{i, j, l} \geq 3500 \enspace \forall j, l
 $$
 
 %-----------------------------------------------------------------------------------

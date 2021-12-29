@@ -129,20 +129,20 @@ def greyjoy_house():
             modelo.solve(disp=False)
 
         except:
-            return -1
+            return -1, -1
 
-        return modelo.options.OBJFCNVAL
+        return modelo.options.OBJFCNVAL, [_trigo.value, _encurtidos.value, _ganado.value, _agua.value]
 
-    min = greyjoy_house_solve()
+    min, _vars = greyjoy_house_solve()
     print('Segun tu habilidad como gastronomo, que cantidad de alimentos se deberia producir')
     trigo = int(input('Trigo:'))
     encurtidos = int(input('Encurtidos:'))
     ganado = int(input('Ganado:'))
     agua = int(input('Agua:'))
 
-    user_min = greyjoy_house_solve(trigo, encurtidos, ganado, agua)
+    user_min, _ = greyjoy_house_solve(trigo, encurtidos, ganado, agua)
     if user_min > 0:
-        print('El costo minimo de su produccion es de ', user_min)
+        print('El costo minimo de su produccion es de ' + str(min) + ' que se obtiene produciendo ' +  str(_vars[0][0]) + ' gramos de trigo, ' + str(_vars[1][0]) + ' unidades de ganado, ' + str(_vars[2][0]) + ' gramos de encurtidos y ' + str(_vars[3][0]) + ' litros de agua potable')
         if min*4<user_min:
             print('Tu solución es bastante mala con respecto al costo mínimo posible, es cuatro veces mayor.El costo mínimo era de',max)
         elif min*2<user_min:
@@ -158,6 +158,7 @@ def greyjoy_house():
         
     else:
         print('Su solución no es factible.El costo minimo posible es',min )
+        print('El costo minimo de su produccion es de ' + str(min) + ' que se obtiene produciendo ' +  str(_vars[0][0]) + ' gramos de trigo, ' + str(_vars[1][0]) + ' unidades de ganado, ' + str(_vars[2][0]) + ' gramos de encurtidos y ' + str(_vars[3][0]) + ' litros de agua potable')
         
 
 
@@ -309,9 +310,10 @@ def baratheon_house():
             modelo.solve(disp=False)
         
         except Exception:
-            return -1
+            return -1, -1
 
-        return modelo.options.OBJFCNVAL
+        ret_vars = [[[_vars[i][j][l].value for l in range(len(_vars[i][j]))] for j in range(len(_vars[i]))] for i in range(len(_vars))]
+        return modelo.options.OBJFCNVAL, ret_vars
 
     print('Se intentara preservar los caminos?')
     print('1 - Si')
@@ -336,7 +338,7 @@ def baratheon_house():
             print('Escriba una entrada correcta')
 
 
-    min = baratheon_house_solve(preservar_caminos=preservar)
+    min, _vars = baratheon_house_solve(preservar_caminos=preservar)
     print('Segun el analisis que haz realizado sobre los caminos, cual seria la distribucion de recursos a enviar por cada ruta?')
     print()
     user_ans = [[[0 for _ in range(3)] for _ in range(3)] for _ in range(4)]
@@ -345,9 +347,14 @@ def baratheon_house():
             for l in range(len(user_ans[i][j])):
                 user_ans[i][j][l] = int(input('Escriba la cantidad de ' + names[i] + ' a enviar por la ruta comenzando en el lugar 1.' + str(j + 1) + ' y terminando en el lugar 2.' + str(l + 1) + ': '))
 
-    user_min = baratheon_house_solve(user_ans, preservar)
+    user_min, _ = baratheon_house_solve(user_ans, preservar)
     if user_min > 0:
         print('El costo minimo de su produccion es de ', user_min)
+        print('La distribucion de los caminos es de:\n')
+        print('Para las armas:\n', _vars[0])
+        print('Para la comida:\n', _vars[1])
+        print('Para los soldados:\n', _vars[2])
+        print('Para el fuego valiryo:\n', _vars[3])
         if min*4<user_min:
             print('Tu solución es bastante mala con respecto al costo mínimo posible, es cuatro veces mayor.El costo mínimo era de',max)
         elif min*2<user_min:
@@ -363,6 +370,11 @@ def baratheon_house():
         
     else:
         print('Su solución no es factible.El costo minimo posible es',min )
+        print('La distribucion de los caminos es de:\n')
+        print('Para las armas:\n', _vars[0])
+        print('Para la comida:\n', _vars[1])
+        print('Para los soldados:\n', _vars[2])
+        print('Para el fuego valiryo:\n', _vars[3])
 
 
 

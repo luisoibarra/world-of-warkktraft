@@ -77,7 +77,7 @@ Lic. en Ciencias de la Computación
 	\\ \addr Grupo C411 \\
 \name Adrián Hernández Pérez \email \href{mailto:adrianmatcom@gmail.com}{adrianmatcom@gmail.com}
 	\\ \addr Grupo C411 \\
-\name Damián O'Hallorans Toledo \email \href{mailto:luis.ibarra@estudiantes.matcom.uh.cu}{luis.ibarra@estudiantes.matcom.uh.cu}
+\name Damián O'Hallorans Toledo \email \href{mailto:damian.ohallorans@estudiantes.matcom.uh.cu}{damian.ohallorans@estudiantes.matcom.uh.cu}
 	\\ \addr Grupo C412} % TODO Correo
 
 %-----------------------------------------------------------------------------------
@@ -158,6 +158,8 @@ Se explicará el flujo de la clase, el cual consiste en:
 	\item El equipo que más puntos tenga al final, gana.
 
 \end{enumerate}
+
+La clase práctica contiene como medio un jupyter notebook que sirve para llevar un registro de las respuestas dichas por los estudiantes y ayuda al profesor en la asignación de puntos en dependencia de las respuestas. Además contiene un archivo pdf el cual será el archivo que tendrán los estudiantes previo a realizar la clase práctica.
 
 %===================================================================================
 % Desarrollo
@@ -293,9 +295,9 @@ En la preparación de la batalla se necesitan armas para que los guerreros pueda
 
 \begin{itemize}
 
-	\item 300 unidades de hierro
-	\item 400 unidades de madera
-	\item 400 unidades de cuero
+	\item 600000 unidades de hierro
+	\item 400000 unidades de madera
+	\item 800000 unidades de cuero
 
 \end{itemize}
 
@@ -350,19 +352,19 @@ Inciso a)
 La cantidad de hierro disponible no puede ser superada:
 
 $$
-10x_1 + 2x_2 + 80x_3 \le 300
+10x_1 + 2x_2 + 80x_3 \le 600000
 $$
 
 La cantidad de hierro disponible no puede ser superada:
 
 $$
-2x_1 + 10x_2 + 100x_3 \le 400
+2x_1 + 10x_2 + 100x_3 \le 400000
 $$
 
 La cantidad de hierro disponible no puede ser superada:
 
 $$
-4x_1 + 5x_2 + 50x_3 \le 400
+4x_1 + 5x_2 + 50x_3 \le 800000
 $$
 
 Las cantidades tienen que ser no negativas:
@@ -376,7 +378,7 @@ $$
 Se quiere maximizar el daño inflingido con las armas creadas.
 
 $$
-\max 15 * x_1 + 10 * x_2 + 80 * x_3
+\max 15 x_1 + 10 x_2 + 80 x_3
 $$
 
 Inciso b)
@@ -418,7 +420,7 @@ $$
 %-----------------------------------------------------------------------------------
 (Este ejercicio tiene una duración de $10$ minutos.)\\
 
-Un importante recurso para la contienda es la comida. Los soldados y la mano de obra son muchos y cada uno necesita ser alimentado para poder trabajar y luchar contra los temibles caminantes blancos. Esta responsabilidad cae sobre Casa Greyjoy. Los cálculos estiman que para hacer una comida para una persona se necesitan:
+Un importante recurso para la contienda es la comida. Los soldados y la mano de obra son muchos y cada uno necesita ser alimentado para poder trabajar y luchar contra los temibles caminantes blancos. Esta responsabilidad cae sobre la Casa Greyjoy. Los cálculos estiman que para hacer una comida para una persona se necesitan:
 
 \begin{itemize}
 
@@ -449,7 +451,7 @@ Para satisfacer esta demanda se tienen un conjunto de alimentos y ganado a dispo
 
 \begin{enumerate}
 
-	\item Sabiendo que se espera un ejército de alrededor 10 000 personas, proponga a los jefes de la casa una manera de cumplir con los 
+	\item Sabiendo que se espera un ejército de alrededor 60 000 personas, proponga a los jefes de la casa una manera de cumplir con los 
 	requerimientos con el menor costo posible.
 	\item Se quiere tener modelo que generalice el problema anterior en términos de la cantidad de tipos de nutrientes y cantidad de tipos de 
 	recursos. Proponga un modelo que haga esta generalización.
@@ -465,6 +467,8 @@ Este ejercicio es un sencillo problema de dieta, en el cual se tienen alimentos 
 %-----------------------------------------------------------------------------------
 		\subsubsection{Solución}\label{subsubsec:sol_ejer_2}
 %-----------------------------------------------------------------------------------
+
+Inciso a)
 
 \textbf{Variables:}
 
@@ -524,6 +528,40 @@ Las cantidades tienen que ser no negativas:
 
 $$
 X_i \ge 0 \quad \forall i
+$$
+
+Inciso b)
+
+\textbf{Variables de decisión:}
+
+\begin{itemize}
+	\item $X_i$: Cantidad de producto $i$.
+\end{itemize}
+
+\textbf{Restricciones:}
+
+\begin{itemize}
+	\item $V_i$: Costo del producto $i$.
+	\item $b_j$: Cantidad de necesaria del nutriente $j$.
+	\item $a_{ij}$: Cantidad de nutrinte $j$ en el producto $i$.
+\end{itemize}
+
+Cumpliendo las restricciones de necesidad de nutrientes:
+
+$$
+\sum_{i=1} X_i a_{ij} \ge b_j \quad \forall j
+$$
+
+Las cantidades tienen que ser no negativas:
+
+$$
+X_i \ge 0 \quad \forall i
+$$
+
+\textbf{Función objetivo:}
+
+$$
+\min \sum_{i=1} V_i X_i
 $$
 
 
@@ -620,10 +658,10 @@ $$
 x_6 \le 10
 $$
 
-La cantidad total creada tiene que cumplir con la demanda, los ingredientes tienen no se usan completamente:
+La cantidad total creada tiene que cumplir con la demanda, los ingredientes no se usan completamente:
 
 $$
-0.8 x_1 + 0.65 x_2 + 0.55 x_3 + x_4 + x_5 + x_6 \le 100
+0.8 x_1 + 0.65 x_2 + 0.55 x_3 + x_4 + x_5 + x_6 = 100
 $$
 
 Las cantidades tienen que ser no negativas:
@@ -710,7 +748,7 @@ Es hora de reunir todos los recursos y tropas. Para esto se conoce que hacen fal
 
 \end{itemize}
 
-En total se quieren trasladar 8 000 armas, 30 000 unidades de comida, 10 000 soldados, 100 unidades de fuego valiryo.
+En total se quieren trasladar 51 000 armas, 285 000 unidades de comida, 60 000 soldados, 100 unidades de fuego valiryo.
 
 \renewcommand{\theenumi}{\alph{enumi}} % enumerate con incisos
 % \renewcommand{\theenumi}{\arabic{enumi}} % enumerate con números
@@ -719,7 +757,7 @@ En total se quieren trasladar 8 000 armas, 30 000 unidades de comida, 10 000 sol
 
 	\item Diga dónde se tienen que asignar los recursos y tropas para que el desgaste del transporte sea lo menor posible.
 	\item Para mitigar el desgaste de los caminos, estos tienen algunas restricciones sobre la cantidad de recursos que pueden ser 
-	transportados por ellos. Se tienen que transportar como mínimo en cada camino unas 3500 unidades de cualquier tipo de recursos o tropas. 
+	transportados por ellos. Se tienen que transportar como mínimo en cada camino unas 35000 unidades de cualquier tipo de recursos o tropas. 
 	¿Cuál sería la nueva asignación?
 
 \end{enumerate}
@@ -786,7 +824,7 @@ $$
 Se necesita también que por cada camino pasen al menos 3500 unidades de cualquier recurso para mitigar el desgaste de los caminos. (Parte del inciso b solamente)
 
 $$
-\sum^{4}_{i=1} X_{i, j, l} \geq 3500 \enspace \forall j, l
+\sum^{4}_{i=1} X_{i, j, l} \geq 35000 \enspace \forall j, l
 $$
 
 %-----------------------------------------------------------------------------------
@@ -811,7 +849,7 @@ Ya se encuentran todos los recursos en Winterfell, listos para la batalla, el fr
 	\end{center}
 \end{figure}
 
-Se sabe que cada soldado puede derrotar a un caminante blanco antes de perecer, además se tiene un lugar inicialmente vacío en las cercanías del campo de batalla, ahí las tropas pueden actuar como una fuerza de acción rápida además den descansar y reparar sus armas para continuar luchando, aunque por desgracia este lugar tiene un máximo de 5000 hombres. Las tropas se van enviando constantemente en cada oleada para reforzar la ofensiva. Debido al proceso de movilización, aumentar la cantidad de hombres que se envían a la batalla en cada oleada tiene un costo de 1 por hombre y disminuirlo de 0.5.
+Se sabe que cada soldado puede derrotar a un caminante blanco antes de perecer, además se tiene un lugar inicialmente vacío en las cercanías del campo de batalla, ahí las tropas pueden actuar como una fuerza de acción rápida además de descansar y reparar sus armas para continuar luchando, aunque por desgracia este lugar tiene un máximo de 5000 hombres. Las tropas se van enviando constantemente en cada oleada para reforzar la ofensiva. Debido al proceso de movilización, aumentar la cantidad de hombres que se envían a la batalla en cada oleada tiene un costo de 1 por hombre y disminuirlo de 0.5.
 
 \renewcommand{\theenumi}{\alph{enumi}} % enumerate con incisos
 % \renewcommand{\theenumi}{\arabic{enumi}} % enumerate con números

@@ -143,6 +143,28 @@ class ProblemManager:
         max = self.solver(*args)
         return max
 
+    def compare_assigantions(self, opt_assignations, user_assignations):
+        opt_assignations = {x.name:x.value.value[0] for x in opt_assignations}
+        user_assignations = {x:y for x,y in zip(opt_assignations,user_assignations)}
+
+        print("Comparación del vector solución dado con el vector solución óptimo")
+        for var_name in opt_assignations:
+            opt_value = opt_assignations[var_name]
+            user_value = user_assignations[var_name]
+            diff = opt_value - user_value
+            suggestion = ""
+            if abs(diff) <= 0.00001:
+                suggestion = "Todo bien :)"
+            elif diff > 0:
+                suggestion = f"Aumentar el valor de {var_name}"
+            else:
+                suggestion = f"Disminuir el valor de {var_name}"
+
+
+            print(f"{var_name}:")
+            print("Óptimo:", opt_value, "Dado:", user_value)
+            print("Diferencia:", diff, "Sugerencia:", suggestion)
+
     def compare(self, user_args=None, unfold=False):
         try:
             if unfold:
@@ -164,21 +186,36 @@ class ProblemManager:
 
         user_args = [x for x in unfold_list(user_args)]
 
+        self.compare_assigantions(vector_variables, user_args)
+
         try:        
             user_opt, _ = self.solve(*user_args)
             user_args = [x for x in unfold_list(user_args)]
             
+            optimal_proportion = user_opt/opt
+
             print('El valor alcanzado con su asiganción es de', user_opt)
-            if opt > user_opt * 4:
-                print('Tu solución es bastante mala con respecto al valor óptimo, es menos que la cuarta parte. El valor óptimo era de', opt)
-            elif opt>user_opt * 2:
-                print('Tu solución es mala con respecto a valor óptimo, es menos de la mitad. El valor óptimo era de', opt)
-            elif opt>user_opt * 1.5:
-                print('Tu solución es bastante buena, el valor óptimo era de', opt)
-            elif opt < user_opt + 5:
-                print('Tu solución es óptima')
+            print('El valor óptimo del problema es', opt)
+            print(f"Su solución es {optimal_proportion*100:0.2f}% óptima, por lo que")
+
+            if optimal_proportion < 0 - 0.00000001:
+                raise Exception("La naturaleza de los problemas dados no admite óptimos negativos")
+
+            if optimal_proportion < 0.25:
+                print('Su solución es bastante mala con respecto al valor óptimo, es menos que la cuarta parte.')
+            elif optimal_proportion < 0.5:
+                print('Su solución es mala con respecto al valor óptimo, es menos de la mitad.')
+            elif optimal_proportion < 0.75:
+                print('Su solución es moderadamente mala con respecto al valor óptimo, es menos de 3/4 del óptimo')
+            elif optimal_proportion < 0.90:
+                print('Su solución es aceptable, aunque se puede mejorar.')
+            elif optimal_proportion < 0.95:
+                print('Su solución es buena, pero le falta un poco aún')
+            elif optimal_proportion < 0.99:
+                print('Su solución es casi óptima')
             else:
-                print('Tu solución es muy buena,casi en lo óptimo, pero el valor óptimo posible alcanzado es', opt)
+                print('Su solución es óptima')
+            
             return user_opt, user_args, opt, vector_variables 
         except Exception as ex:
             print('Su solución no es factible. El valor óptimo es', opt)

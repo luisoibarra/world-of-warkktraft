@@ -50,8 +50,12 @@ print(lin.linprog(c, Ab, b)) # El resultado se multiplica por -1.
 
 # ## Infratructura
 
-# In[11]:
+# In[2]:
 
+
+# Install a conda package in the current Jupyter kernel
+import sys
+# !conda install --yes --prefix {sys.prefix} numpy
 
 from typing import Callable, List, Optional, Tuple
 from gekko import GEKKO
@@ -180,26 +184,41 @@ class ProblemManager:
             print('Su solución no es factible. El valor óptimo es', opt)
             return None, None, None, None
 
+class ClassManager:
+
+    def __init__(self) -> None:
+        self.exercise_points = {}
+
+    def register_result(self, exercise_name, problem_manager, args1, args2, **kwargs):
+        probl_eq1_opt, probl_eq2_opt, opt_probl, vector_opt_probl, punto_probl_eq1, punto_probl_eq2 =     comparar_problemas(problem_manager, args1, args2, **kwargs)
+        self.exercise_points[exercise_name] = (punto_probl_eq1, punto_probl_eq2)
+
+    def print_result(self):
+        equipo1 = [x for (x,_) in self.exercise_points.values()]
+        equipo2 = [y for (_,y) in self.exercise_points.values()]
+
+        print("Puntos equipo 1:", equipo1)
+
+        print("Puntos equipo 2:", equipo2)
+
+        ganador = "1" if equipo1 > equipo2 else "2" if equipo1 < equipo2 else "1 y 2"
+
+        print("Felicidades equipo", ganador, "por participar y ganar en la lucha contra los caminantes blancos")
+
+class_manager = ClassManager()
 
 # # Problemas
-
-# In[3]:
-
-
-# Puntos ganados por el equipo 1
-puntos_equipo_1 = []
-
-# Puntos ganados por el equipo 2
-puntos_equipo_2 = []
-
+# 
+# Luego de dar solución al modelo del problema, rellenar las secciones de los argumentos con los valores dados por los estudiantes a las variables de decisión. Al final se dará a conocer el resultado final dada la cantidad de puntos.
+# 
 
 # ## 1. Casa Mormont
 # 
 # En la preparación de la batalla se necesitan armas para que los guerreros puedan defenderse del ejército de caminantes blancos. Para esto se tienen escasos recursos, así que hay que usarlos sabiamente. Entre las reservas y el trabajo se logró reunir:
 # 
-# - 300 unidades de hierro
-# - 400 unidades de madera
-# - 400 unidades de cuero
+# - 600000 unidades de hierro
+# - 400000 unidades de madera
+# - 800000 unidades de cuero
 # 
 # Los herreros y artesanos nos brindan una tabla que muestra la cantidad de materia prima necesaria para construir cada arma y el daño que reporta cada una.
 # 
@@ -212,7 +231,7 @@ puntos_equipo_2 = []
 # 1. Ayude a darle el mejor uso a estos recursos, diciéndoles a los jefes de la casa la cantidad de espadas, arcos y catapultas que necesitan construir para maximizar el daño que realizan.
 # 2. Se quiere tener modelo que generalice el problema anterior en términos de la cantidad de tipos de materiales y cantidad de tipos de armas. Proponga un modelo que haga esta generalización.
 
-# In[4]:
+# In[3]:
 
 
 # Ejercicio 1
@@ -220,9 +239,9 @@ puntos_equipo_2 = []
 def mormont_house_solve(swords=None,bows=None,catapults=None):
     #1 Mormont House
     #resourses
-    iron = 300
-    wood = 400
-    leather = 400
+    iron = 600000
+    wood = 400000
+    leather = 800000
     
     modelo = GEKKO(remote=False)
     modelo.options.SOLVER = 1  # APOPT is an MINLP solver
@@ -279,12 +298,10 @@ argumentos_problema_1_equipo_2 = [
 ]
 
 problema_1 = ProblemManager(mormont_house_solve, mormont_house_input)
-
-probl1_eq1_opt, probl1_eq2_opt, opt_probl1, vector_opt_probl1, punto_probl1_eq1, punto_probl1_eq2 =     comparar_problemas(problema_1, argumentos_problema_1_equipo_1, argumentos_problema_1_equipo_2, maxim=True)
-
-# Agregar puntuación
-puntos_equipo_1.append(punto_probl1_eq1)
-puntos_equipo_2.append(punto_probl1_eq2)
+class_manager.register_result("Ejercicio 1 - Casa Mormont", problema_1, 
+                                argumentos_problema_1_equipo_1, 
+                                argumentos_problema_1_equipo_2, 
+                                maxim=True)
 
 
 # ## 2. Casa Greyjoy
@@ -305,17 +322,17 @@ puntos_equipo_2.append(punto_probl1_eq2)
 # | Encurtidos    | 20       | 30            | 10     | 30    |
 # | Agua          | -        | -             | -      | 5     |
 # 
-# 1. Sabiendo que se espera un ejército de alrededor 10 000 personas, proponga a los jefes de la casa una manera de cumplir con los requerimientos con el menor costo posible.
+# 1. Sabiendo que se espera un ejército de alrededor 60 000 personas, proponga a los jefes de la casa una manera de cumplir con los requerimientos con el menor costo posible.
 # 2. Se quiere tener modelo que generalice el problema anterior en términos de la cantidad de tipos de nutrientes y cantidad de tipos de recursos. Proponga un modelo que haga esta generalización.
 
-# In[5]:
+# In[ ]:
 
 
 # Ejercicio 2
 def greyjoy_house_solve(trigo=None, ganado=None, encurtidos=None, agua=None):
     
     # Datos
-    total_ppl = 1000
+    total_ppl = 60000
     proteinas = 60 * total_ppl
     carbohidratos = 120 * total_ppl
     aceite = 20 * total_ppl
@@ -396,13 +413,9 @@ argumentos_problema_2_equipo_2 = [
 ]
 
 problema_2 = ProblemManager(greyjoy_house_solve, greyjoy_house_input)
-
-probl2_eq1_opt, probl2_eq2_opt, opt_probl2, vector_opt_probl2, punto_probl2_eq1, punto_probl2_eq2 =     comparar_problemas(problema_2, argumentos_problema_2_equipo_1, argumentos_problema_2_equipo_2)
-
-# Agregar puntuación
-puntos_equipo_1.append(punto_probl2_eq1)
-puntos_equipo_2.append(punto_probl2_eq2)
-
+class_manager.register_result("Ejercicio 2 - Casa Greyjoy", problema_2, 
+                                argumentos_problema_2_equipo_1, 
+                                argumentos_problema_2_equipo_2)
 
 # ## 3. Casa Targaryen
 # 
@@ -430,7 +443,7 @@ puntos_equipo_2.append(punto_probl2_eq2)
 # 
 # 1. Ayude a los alquimistas a crear 100 unidades de fuego valiryo con el menor costo posible para enfrentar al enemigo.
 
-# In[6]:
+# In[ ]:
 
 
 # Ejercicio 3
@@ -491,13 +504,9 @@ argumentos_problema_3_equipo_2 = [
 ]
 
 problema_3 = ProblemManager(targaryen_house_solve, targaryen_house_input)
-
-probl3_eq1_opt, probl3_eq2_opt, opt_probl3, vector_opt_probl3, punto_probl3_eq1, punto_probl3_eq2 =     comparar_problemas(problema_3, argumentos_problema_3_equipo_1, argumentos_problema_3_equipo_2)
-
-# Agregar puntuación
-puntos_equipo_1.append(punto_probl3_eq1)
-puntos_equipo_2.append(punto_probl3_eq2)
-
+class_manager.register_result("Ejercicio 3 - Casa Targaryen", problema_3, 
+                                argumentos_problema_3_equipo_1, 
+                                argumentos_problema_3_equipo_2)
 
 # ## 4. Casa Baratheon
 # 
@@ -535,12 +544,12 @@ puntos_equipo_2.append(punto_probl3_eq2)
 # | 1.2     | 25   | 5    | 5    |
 # | 1.3     | 25   | 5    | 5    |
 # 
-# En total se quieren trasladar 8 000 armas, 30 000 unidades de comida, 10 000 soldados, 100 unidades de fuego valiryo.
+# En total se quieren trasladar 51 000 armas, 285 000 unidades de comida, 60 000 soldados, 100 unidades de fuego valiryo.
 # 
 # 1. Diga dónde se tienen que asignar los recursos y tropas para que el desgaste del transporte sea lo menor posible.
-# 2. Para mitigar el desgaste de los caminos, estos tienen algunas restricciones sobre la cantidad de recursos que pueden ser transportados por ellos. Se tienen que transportar como mínimo en cada camino unas 3500 unidades de cualquier tipo de recusros o tropas. ¿Cuál sería la nueva asignación?
+# 2. Para mitigar el desgaste de los caminos, estos tienen algunas restricciones sobre la cantidad de recursos que pueden ser transportados por ellos. Se tienen que transportar como mínimo en cada camino unas 35000 unidades de cualquier tipo de recusros o tropas. ¿Cuál sería la nueva asignación?
 
-# In[7]:
+# In[ ]:
 
 
 # Ejercicio 4
@@ -549,7 +558,7 @@ def baratheon_house_solve(recursos_caminos=None, preservar_caminos=False):
     # Datos
     names = ['armas', 'comida', 'soldados', 'fuego_valiryo']
     
-    necesario_recursos = [8000, 30000, 10000, 100]
+    necesario_recursos = [51000, 285000, 60000, 100]
     costo_caminos = [
         [
             [5, 10, 7],
@@ -572,7 +581,7 @@ def baratheon_house_solve(recursos_caminos=None, preservar_caminos=False):
             [25, 5, 5]
         ]
     ]
-    min_por_camino = 3500
+    min_por_camino = 35000
 
     modelo = GEKKO(remote=False)
     modelo.options.SOLVER = 1  # APOPT is an MINLP solver
@@ -595,7 +604,7 @@ def baratheon_house_solve(recursos_caminos=None, preservar_caminos=False):
             for l in range(len(_vars[i][j])):
                 eq += _vars[i][j][l]
 
-        modelo.Equation(eq >= necesario_recursos[i])
+        modelo.Equation(eq == necesario_recursos[i])
         eq = 0
 
     # Restricciones de balanceo de demanda entre caminos
@@ -721,14 +730,13 @@ problema_4 = ProblemManager(baratheon_house_solve, baratheon_house_input)
 
 print("Inciso a)")
 print()
-probl4_eq1_opt, probl4_eq2_opt, opt_probl4, vector_opt_probl4, punto_probl4_eq1, punto_probl4_eq2 =     comparar_problemas(problema_4, argumentos_problema_4_equipo_1, argumentos_problema_4_equipo_2, unfold=True)
+class_manager.register_result("Ejercicio 4 a) - Casa Baratheon", problema_4, 
+                                argumentos_problema_4_equipo_1, 
+                                argumentos_problema_4_equipo_2,
+                                unfold=True)
 
-# Agregar puntuación
-puntos_equipo_1.append(punto_probl4_eq1)
-puntos_equipo_2.append(punto_probl4_eq2)
 
-
-# In[8]:
+# In[ ]:
 
 
 
@@ -781,11 +789,10 @@ argumentos_problema_4_2_equipo_2 = [
 
 print("Inciso b)")
 print()
-probl4_2_eq1_opt, probl4_2_eq2_opt, opt_probl4_2, vector_opt_probl4_2, punto_probl4_2_eq1, punto_probl4_2_eq2 =     comparar_problemas(problema_4, argumentos_problema_4_2_equipo_1, argumentos_problema_4_2_equipo_2, unfold=True)
-
-# Agregar puntuación
-puntos_equipo_1.append(punto_probl4_2_eq1)
-puntos_equipo_2.append(punto_probl4_2_eq2)
+class_manager.register_result("Ejercicio 4 b) - Casa Baratheon", problema_4, 
+                                argumentos_problema_4_2_equipo_1, 
+                                argumentos_problema_4_2_equipo_2,
+                                unfold=True)
 
 
 # ## 5. Casa Stark
@@ -801,9 +808,9 @@ puntos_equipo_2.append(punto_probl4_2_eq2)
 # 1. Realice un plan de lucha que permita ganar la batalla con el mínimo de costo posible.
 # 2. Para que Arya pueda dar el golpe final se tiene que tener en la última oleada una diferencia de poder ganadora para los caminantes blancos de 1000, para que el jefe se confíe y salga al campo de batalla. Teniendo esto en cuenta, ¿qué cambios le harías a la estrategia?
 
-# In[9]:
+# In[ ]:
 
-
+# Ejercicio 5
 def stark_house_solve(waves_values=None, arya=False):
     if waves_values is None:
         waves_values = []
@@ -904,15 +911,13 @@ argumentos_problema_5_equipo_2 = [
 print("Inciso a)")
 print()
 problema_5 = ProblemManager(stark_house_solve, stark_house_input)
-
-probl5_eq1_opt, probl5_eq2_opt, opt_probl5, vector_opt_probl5, punto_probl5_eq1, punto_probl5_eq2 =     comparar_problemas(problema_5, argumentos_problema_5_equipo_1, argumentos_problema_5_equipo_2, unfold=True)
-
-# Agregar puntuación
-puntos_equipo_1.append(punto_probl5_eq1)
-puntos_equipo_2.append(punto_probl5_eq2)
+class_manager.register_result("Ejercicio 5 a) - Casa Stark", problema_5, 
+                                argumentos_problema_5_equipo_1, 
+                                argumentos_problema_5_equipo_2,
+                                unfold=True)
 
 
-# In[12]:
+# In[ ]:
 
 
 argumentos_problema_5_2_equipo_1 = [
@@ -947,28 +952,16 @@ argumentos_problema_5_2_equipo_2 = [
 
 print("Inciso b)")
 print()
-probl5_2_eq1_opt, probl5_2_eq2_opt, opt_probl5_2, vector_opt_probl5_2, punto_probl5_2_eq1, punto_probl5_2_eq2 =     comparar_problemas(problema_5, argumentos_problema_5_2_equipo_1, argumentos_problema_5_2_equipo_2, unfold=True)
-
-# Agregar puntuación
-puntos_equipo_1.append(punto_probl5_2_eq1)
-puntos_equipo_2.append(punto_probl5_2_eq2)
+class_manager.register_result("Ejercicio 5 b) - Casa Stark", problema_5, 
+                                argumentos_problema_5_2_equipo_1, 
+                                argumentos_problema_5_2_equipo_2,
+                                unfold=True)
 
 
 # # Conlcusión
 # 
 # Conteo de puntos y dar resultados
 
-# In[16]:
+# In[8]:
 
-
-equipo1 = sum(puntos_equipo_1)
-equipo2 = sum(puntos_equipo_2)
-
-print("Puntos equipo 1:", equipo1)
-
-print("Puntos equipo 2:", equipo2)
-
-ganador = "1" if equipo1 > equipo2 else "2" if equipo1 < equipo2 else "1 y 2"
-
-print("Felicidades equipo", ganador, "por participar y ganar en la lucha contra los caminantes blancos")
-
+class_manager.print_result()

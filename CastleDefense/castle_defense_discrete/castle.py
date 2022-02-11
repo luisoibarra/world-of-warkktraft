@@ -2,7 +2,7 @@
 API para crear niveles del juego
 """
 
-from typing import Dict, List, Optional, Union
+from typing import Dict, List, Optional, Tuple, Union
     
 class Habitante:
     def __init__(self, nombre: str, cantidad: int) -> None:
@@ -50,11 +50,71 @@ class Arma:
         return str(self)
     
 class Castillo:
-    def __init__(self, artesanos: Union[int,Artesano], guerreros: Union[int,Guerrero], recursos: Union[List[Recurso], Dict[str, int]], armas: List[Arma]) -> None:
+    def __init__(self, artesanos: Union[int,Artesano]
+                     , guerreros: Union[int,Guerrero]
+                     , recursos: Union[List[Recurso], Dict[str, int]]
+                     , armas: List[Arma]
+                     , armas_iniciales: Dict[str,int] = None) -> None:
         self.recursos = _convertir_a_lista_recurso(recursos)
         self.artesanos = _convertir_en_artesano_guerrero(artesanos, Artesano)
         self.guerreros = _convertir_en_artesano_guerrero(guerreros, Guerrero)
         self.armas = armas
+        self.armas_iniciales = armas_iniciales if armas_iniciales else {}
+        self._acomodar_datos_castillo()
+
+
+    def _acomodar_datos_castillo(self):
+        """
+        Realiza una modificación al `castillo` añadiendo supuestos básicos del modelo
+        y realiza comprobaciones básicas
+        """
+
+        # Ordenar los recursos del castillo por nombre para que coincidan en índice 
+        # con los recursos de las armas
+        self.recursos.sort(key=lambda x: x.nombre) 
+
+        cant_tipos_recursos = len(self.recursos)
+        
+        for arma in self.armas:
+            faltantes = set([s.nombre for s in self.recursos]).difference([x.nombre for x in arma.recursos])
+            for f in faltantes: # Añadir con costo 0 los recursos que no se definieron en las armas
+                arma.recursos.append(Recurso(f, 0))
+            # Ordenar los recursos del castillo por nombre para que coincidan en índice con los recursos del castillo
+            arma.recursos.sort(key=lambda x: x.nombre)
+            if cant_tipos_recursos != len(arma.recursos):
+                raise Exception(f"La cantidad de tipos de recursos en el arma {arma.nombre} es diferente a la cantidad de tipos de recursos definida. Esto puede significar algún error en los nombres de los recursos al crear el arma o la omisión de alguno en la definición de estos")
+
+        nombre_de_armas = set([x.nombre for x in self.armas])
+        for arma,inicial in self.armas_iniciales.items():
+            if inicial < 0:
+                raise Exception(f"La cantidad inicial del arma {arma} no puede ser negativa")
+            if arma not in nombre_de_armas:
+                raise Exception(f"El arma {arma} se encuentra en armas iniciales pero no está definido en las armas")
+                
+        # Si no está definida en las armas iniciales significa que la cantidad inicial es 0
+        for arma_faltante in nombre_de_armas.difference(self.armas_iniciales.keys()):
+            self.armas_iniciales[arma_faltante] = 0
+            
+        # Añadir las dependencias de las armas iniciales.
+        for arma in self._orden_topologico(self.armas):
+            if arma.depende is not None:
+                self.armas_iniciales[arma.depende.nombre] += self.armas_iniciales[arma.nombre]
+
+    def _orden_topologico(self, armas: List[Arma]) -> List[Arma]:
+        grados_entrada = {x.nombre: 1 if any(y for y in armas if y.depende is not None and y.depende.nombre == x.nombre) else 0 for x in armas}
+        orden_topologico = []
+        while grados_entrada:
+            nivel_cero = [x for x in grados_entrada if grados_entrada[x] == 0]
+            orden_topologico.extend(nivel_cero)
+            for depen in [x.depende for x in armas if 
+                          x.nombre in nivel_cero and 
+                          x.depende is not None and 
+                          x.depende.nombre in grados_entrada]:
+                grados_entrada[depen.nombre] -= 1
+            for arma in nivel_cero:
+                grados_entrada.__delitem__(arma)
+        return [next(x for x in armas if x.nombre == y) for y in orden_topologico]
+                
 
 class AtaqueEnemigo:
     def __init__(self, poder: int) -> None:
@@ -73,13 +133,13 @@ class Tarea:
         self.recursos = recursos
 
 class Modelo:
-    def solve(self):
-        pass
+    
+    def solve(self) -> Tuple[Dict[int,Dict[str,int]],Dict[int,Dict[str,int]]]:
+        raise NotImplementedError()
 
 class Juego:
     def __init__(self, nivel: 'Nivel') -> None:
         self.nivel = nivel
-        self._acomodar_datos_castillo()
 
     @property
     def castillo(self):
@@ -88,30 +148,7 @@ class Juego:
     @property
     def estrategia_enemiga(self):
         return self.nivel.estrategia_enemiga
-
-    def _acomodar_datos_castillo(self):
-        """
-        Realiza una modificación al `castillo` añadiendo supuestos básicos del modelo
-        y realiza comprobaciones básicas
-        """
-
-        # Ordenar los recursos del castillo por nombre para que coincidan en índice 
-        # con los recursos de las armas
-        self.castillo.recursos.sort(key=lambda x: x.nombre) 
-
-        cant_tipos_recursos = len(self.castillo.recursos)
-        
-        for arma in self.castillo.armas:
-            faltantes = set([s.nombre for s in self.castillo.recursos]).difference([x.nombre for x in arma.recursos])
-            for f in faltantes: # Añadir con costo 0 los recursos que no se definieron en las armas
-                arma.recursos.append(Recurso(f, 0))
-            # Ordenar los recursos del castillo por nombre para que coincidan en índice con los recursos del castillo
-            arma.recursos.sort(key=lambda x: x.nombre)
-            if cant_tipos_recursos != len(arma.recursos):
-                raise Exception(f"La cantidad de tipos de recursos en el arma {arma.nombre} es diferente a la cantidad de tipos de recursos definida. Esto puede significar algún error en los nombres de los recursos al crear el arma o la omisión de alguno en la definición de estos")
-        
-                
-                
+              
     def print_prologo(self):
         recursos = [str(x) for x in self.castillo.recursos]
         artesanos = self.castillo.artesanos.cantidad

@@ -2,7 +2,7 @@
 Solución del modelo del juego usando GEKKO 
 """
 
-from typing import Callable
+from typing import Callable, Dict, Tuple
 from gekko import GEKKO
 import gekko
 from castle import Castillo, Juego, Modelo
@@ -10,11 +10,11 @@ import numpy as np
 
 class ModeloGEKKO(Modelo):
     
-    def __init__(self, solve: Callable) -> None:
+    def __init__(self, solve: Callable[[],Tuple[Dict[int,Dict[str,int]],Dict[int,Dict[str,int]]]]) -> None:
         self.solver = solve
         
-    def solve(self):
-        self.solver()
+    def solve(self, **kwargs) -> Tuple[Dict[int,Dict[str,int]],Dict[int,Dict[str,int]]]:
+        return self.solver(**kwargs)
         
 
 class JuegoGEKKO(Juego):
@@ -54,6 +54,10 @@ class JuegoGEKKO(Juego):
     @property
     def ataque_enemigo_por_dia_i(self):
         return np.array([x.poder for x in self.estrategia_enemiga.ataques])
+    
+    @property
+    def armas_iniciales(self):
+        return np.array([self.castillo.armas_iniciales[x.nombre] for x in self.castillo.armas])
  
     def generar_modelo(self):
         
@@ -72,6 +76,7 @@ class JuegoGEKKO(Juego):
         ataque_enemigo_por_dia_i = self.ataque_enemigo_por_dia_i
         armas_dependientes = [(i,x) for i,x in enumerate(self.castillo.armas) if x.depende is not None]
         dependencia_arma_i = {i:next(j for j,y in enumerate(self.castillo.armas) if y.nombre==x.depende.nombre) for i,x in armas_dependientes}
+        armas_iniciales = self.armas_iniciales
 
         # Definiendo variables
         
@@ -120,13 +125,14 @@ class JuegoGEKKO(Juego):
             # superior al ataque del enemigo
             modelo.Equation(modelo.sum(dia_i_armas_j_en_uso[i] * danno_arma_i) >= ataque_enemigo_por_dia_i[i])
             
-            # Las armas tienen que existir para poder usarse
-            for j in range(dia_i_armas_j_en_uso.shape[1]):
-                modelo.Equation(dia_i_armas_j_en_uso[i][j] <= modelo.sum(dia_i_arma_j_contruida[:i,j]))
+            if i > 0:
+                # Las armas tienen que existir para poder usarse
+                for j in range(dia_i_armas_j_en_uso.shape[1]):
+                    modelo.Equation(dia_i_armas_j_en_uso[i][j] <= modelo.sum(dia_i_arma_j_contruida[:i,j]))
                 
-            # La cantidad de armas de las que depende es mayor a la cantidad de las armas que existe.
-            for j in dependencia_arma_i:
-                modelo.Equation(modelo.sum(dia_i_arma_j_contruida[:i,dependencia_arma_i[j]]) >= modelo.sum(dia_i_arma_j_contruida[:i+1,j]))
+                # La cantidad de armas de las que depende es mayor a la cantidad de las armas que existe.
+                for j in dependencia_arma_i:
+                    modelo.Equation(modelo.sum(dia_i_arma_j_contruida[:i,dependencia_arma_i[j]]) >= modelo.sum(dia_i_arma_j_contruida[:i+1,j]))
 
                         
         # Condiciones iniciales
@@ -137,34 +143,47 @@ class JuegoGEKKO(Juego):
         
         for j in range(dia_i_arma_j_contruida.shape[1]):
             # Restriccion de armas iniciales
-            modelo.Equation(dia_i_arma_j_contruida[0][j] == 0) 
+            modelo.Equation(dia_i_arma_j_contruida[0][j] == armas_iniciales[j]) 
         
         # Funcion objetivo
          
         modelo.Maximize(np.sum(dia_i_armas_j_en_uso))
         
-        def solver():
+        def solver(verbose=True, **kwargs) -> Tuple[Dict[int,Dict[str,int]],Dict[int,Dict[str,int]]]:
             try:
                 modelo.solve(disp=False)
-            except Exception:
-                print("No puedes ganar :_(")
-                return
+            except Exception as e:
+                if verbose:
+                    print("No puedes ganar :_(")
+                return None, None
             
             self.print_situacion()
             
-            print("Evolucion")
+            if verbose:
+                print("Evolucion")
+                for i in range(self.total_dias):
+                    print()
+                    print("Dia",i+1)
+                    print()
+                    print("Recursos disponible", [f"{self.castillo.recursos[i].nombre}: {x.value}" for i,x in enumerate(dia_i_recurso_disponible_j[i])])
+                    print("Artesanos para armas", [f"{self.castillo.armas[i].nombre}: {x.value}" for i,x in enumerate(artesanos_dia_i_para_arma_j[i])])
+                    print("Armas terminadas en el turno", [f"{self.castillo.armas[i].nombre}: {x.value}" for i,x in enumerate(dia_i_arma_j_contruida[i])])
+                    print("Total de armas", [f"{x.nombre} {sum(c[0] for c in dia_i_arma_j_contruida[:i+1,j])}" for j,x in enumerate(self.castillo.armas)])
+                    print("Guerreros armados", [f"{self.castillo.armas[i].nombre}: {x.value}" for i,x in enumerate(dia_i_asignacion_guerreros_arma_j[i])])
+                    print("Armas en combate", [f"{self.castillo.armas[i].nombre}: {x.value}" for i,x in enumerate(dia_i_armas_j_en_uso[i])])
+                    print("Poder de fuego", sum(x.value[0]*y for x,y in zip(dia_i_armas_j_en_uso[i],danno_arma_i)))
+                    print("Ataque enemigo", ataque_enemigo_por_dia_i[i])
+            
+            asignacion_artesanos_armas: Dict[int,Dict[str,int]] = {}
+            asignacion_guerreros_armas: Dict[int,Dict[str,int]] = {}
             for i in range(self.total_dias):
-                print()
-                print("Dia",i+1)
-                print()
-                print("Recursos disponible", [f"{self.castillo.recursos[i].nombre}: {x.value}" for i,x in enumerate(dia_i_recurso_disponible_j[i])])
-                print("Artesanos para armas", [f"{self.castillo.armas[i].nombre}: {x.value}" for i,x in enumerate(artesanos_dia_i_para_arma_j[i])])
-                print("Armas terminadas en el turno", [f"{self.castillo.armas[i].nombre}: {x.value}" for i,x in enumerate(dia_i_arma_j_contruida[i])])
-                print("Total de armas", [f"{x.nombre} {sum(c[0] for c in dia_i_arma_j_contruida[:i+1,j])}" for j,x in enumerate(self.castillo.armas)])
-                print("Guerreros armados", [f"{self.castillo.armas[i].nombre}: {x.value}" for i,x in enumerate(dia_i_asignacion_guerreros_arma_j[i])])
-                print("Armas en combate", [f"{self.castillo.armas[i].nombre}: {x.value}" for i,x in enumerate(dia_i_armas_j_en_uso[i])])
-                print("Poder de fuego", sum(x.value[0]*y for x,y in zip(dia_i_armas_j_en_uso[i],danno_arma_i)))
-                print("Ataque enemigo", ataque_enemigo_por_dia_i[i])
+                asignacion_artesanos_armas[i] = {}
+                asignacion_guerreros_armas[i] = {}
+                for j,arma in enumerate(self.castillo.armas):
+                    asignacion_artesanos_armas[i][arma.nombre] = artesanos_dia_i_para_arma_j[i][j][0]
+                    asignacion_guerreros_armas[i][arma.nombre] = dia_i_asignacion_guerreros_arma_j[i][j][0]
+            
+            return asignacion_artesanos_armas, asignacion_guerreros_armas
 
         return ModeloGEKKO(solver)
                         

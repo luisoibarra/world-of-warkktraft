@@ -17,3 +17,8 @@ Se implementó una API capaz de representar fácilmente este tipo de problemas c
 2. Asegurarse de tener la terminal en la misma carpeta que el archivo `main.py`.
 
 3. En la terminal correr `python3 main.py` o `python main.py`.
+
+## TODO
+
+- Informe mejorarlo
+- Tal vez hacer que se puedan agregarle recursos en el camino

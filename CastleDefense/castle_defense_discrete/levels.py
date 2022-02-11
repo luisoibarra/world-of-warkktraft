@@ -80,9 +80,36 @@ def __juego_prueba2() -> Nivel:
     return Nivel("Prueba 2", Nivel.FACIL, estrategia, castillo) 
 
 
+def __juego_prueba3() -> Nivel:
+    """
+    Prueba las armas iniciales
+    """
+    recursos = [
+        Recurso("Oro", 0)
+    ]
+    
+    arma1 = Arma(0, None, "Parte1", [Recurso("Oro", 100)], Artesano(2), Guerrero(10000))
+    arma2 = Arma(0, arma1, "Parte2", [Recurso("Oro", 200)], Artesano(3), Guerrero(10000))
+    arma3 = Arma(100, arma2, "ArmaFinal", [Recurso("Oro", 200)], Artesano(4), Guerrero(2))
+    
+    armas_iniciales = { # No se tienen que asignar las armas de las que dependen, pero estas se crearan automaticamente
+        arma3.nombre: 2,
+    }
+    
+    castillo = Castillo(Artesano(8), Guerrero(5), recursos, [arma1,arma2,arma3], armas_iniciales)
+    
+    estrategia = EstrategiaEnemiga([
+        AtaqueEnemigo(200),
+    ])
+
+    return Nivel("Prueba 3", Nivel.FACIL, estrategia, castillo) 
+
+
+
 NIVELES_TEST = [
     __juego_prueba1(),
     __juego_prueba2(),
+    __juego_prueba3(),
 ]
 
 # TODO

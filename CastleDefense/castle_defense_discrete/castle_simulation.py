@@ -1,6 +1,7 @@
 from typing import Callable, List, Optional, Tuple, Dict
 
-from castle import Arma, AtaqueEnemigo, Castillo, Juego, Modelo, Recurso
+from castle import Arma, AtaqueEnemigo, Castillo, EstrategiaEnemiga, Juego, Modelo, Nivel, Recurso
+from castle_gekko import JuegoGEKKO
 
 class Accion:
 
@@ -83,6 +84,18 @@ class DesasignarGuerreroArma(Accion):
         nombre = input("Nombre de arma: ")
         return DesasignarGuerreroArma(nombre)
 
+class PedirHint(Accion):
+    """
+    Acción que simboliza que el usuario le pida un hint sobre cómo jugar
+    """
+    
+    def __init__(self) -> None:
+        super().__init__("Pedir Hint")
+    
+    @staticmethod
+    def accion_desde_entrada():
+        return PedirHint()
+
 class EstadoDeJuego:
 
     # Campos que se copian del estado
@@ -126,7 +139,7 @@ class EstadoDeJuego:
                 EstadoDeJuego.CORRIENDO,
                 { x.nombre:0 for x in juego.castillo.armas },
                 { x.nombre:0 for x in juego.castillo.armas },
-                { x.nombre:0 for x in juego.castillo.armas },
+                juego.castillo.armas_iniciales.copy(),
             )
         else:
             self.__asignar_campos_iniciales(
@@ -196,6 +209,8 @@ class EstadoDeJuego:
             return self._reaccionar_a_desasignar_artesano_arma(accion)
         if isinstance(accion, PasarTurno):
             return self._reaccionar_a_pasar_turno(accion)
+        if isinstance(accion, PedirHint):
+            return self._reaccionar_a_pedir_hint(accion)
             
         return f"El tipo de la acción {accion} no está manejado", self.copy()
 
@@ -293,6 +308,31 @@ class EstadoDeJuego:
             self.dano_actual < self.ataques_por_turno[self.turno].poder
             return "PERDIÓ el daño del enemigo supera al que puede causar", self.copy_with(turno=siguiente_turno,estado=self.PERDIDO) 
 
+
+    def _reaccionar_a_pedir_hint(self, accion: PedirHint) -> Tuple[str, 'EstadoDeJuego']:
+        castillo = Castillo(self.artesanos, 
+                            self.guerreros, 
+                            [x for x in self.recursos.values()],
+                            [x for x in self.armas.values()])
+        castillo.armas_iniciales = self.armas_construidas.copy()
+        estrategia_enemiga = EstrategiaEnemiga(self.ataques_por_turno[self.turno:])
+        juego = JuegoGEKKO(Nivel(f"Hint usuario turno {self.turno}", Nivel.FACIL, estrategia_enemiga, castillo))
+        modelo = juego.generar_modelo()
+        asignacion_artesanos, asignacion_guerreros = modelo.solve(verbose=False)
+        
+        if asignacion_artesanos is not None and asignacion_guerreros is not None:
+            hint = "Artesanos: "
+            for nombre_arma, asignado in asignacion_artesanos[0].items():
+                if asignado != 0:
+                    hint += f"{nombre_arma} -> {asignado} "
+            hint += "\n"
+            hint += "Guerreros: "
+            for nombre_arma, asignado in asignacion_guerreros[0].items():
+                if asignado != 0:
+                    hint += f"{nombre_arma} -> {asignado} "
+            return hint, self.copy_with()
+        else:
+            return "No puedes ganar :(", self.copy_with()
 
     def _comprobar_recursos_desasignar_artesanos(self, nombre_arma:str, 
                                                     recursos_actuales: Dict[str, Recurso], 
@@ -402,7 +442,8 @@ def devolver_accion(estado: EstadoDeJuego) -> Accion:
         "2": ("Asignar guerrero a arma",AsignarGuerreroArma),
         "3": ("Desasignar artesano a arma",DesasignarArtesanoArma),
         "4": ("Desasignar guerrero a arma",DesasignarGuerreroArma),
-        "5": ("Pasar turno",PasarTurno),
+        "5": ("Pedir hint",PedirHint),
+        "6": ("Pasar turno",PasarTurno),
     }
 
     print("Seleccione la accion a realizar:")
@@ -431,8 +472,13 @@ class ModeloSimulacion(Modelo):
         Recrea el juego en interacción con el usuario
         """
         
+        asignacion_artesanos_armas: Dict[int,Dict[str,int]] = {}
+        asignacion_guerreros_armas: Dict[int,Dict[str,int]] = {}
+        
         estado = EstadoDeJuego(juego=self.juego)
         while estado.estado != estado.CORRIENDO:
+            asignacion_artesanos_armas[estado.turno] = estado.asignacion_armas_artesanos.copy()
+            asignacion_guerreros_armas[estado.turno] = estado.asignacion_armas_guerreros.copy()
             print(estado)
             accion = self.pedir_accion(estado)
             msg, estado = estado.reaccionar_a(accion)
@@ -440,6 +486,7 @@ class ModeloSimulacion(Modelo):
             print(msg)
 
         print("Has", estado.estado)
+        return asignacion_artesanos_armas, asignacion_guerreros_armas
             
             
 class JuegoSimulacion(Juego):

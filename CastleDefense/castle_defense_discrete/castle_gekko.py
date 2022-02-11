@@ -5,15 +5,15 @@ Solución del modelo del juego usando GEKKO
 from typing import Callable, Dict, Tuple
 from gekko import GEKKO
 import gekko
-from castle import Castillo, Juego, Modelo
+from castle import Castillo, Juego, Modelo, ResultModelo
 import numpy as np
 
 class ModeloGEKKO(Modelo):
     
-    def __init__(self, solve: Callable[[],Tuple[Dict[int,Dict[str,int]],Dict[int,Dict[str,int]]]]) -> None:
+    def __init__(self, solve: Callable[[],ResultModelo]) -> None:
         self.solver = solve
         
-    def solve(self, **kwargs) -> Tuple[Dict[int,Dict[str,int]],Dict[int,Dict[str,int]]]:
+    def solve(self, **kwargs) -> ResultModelo:
         return self.solver(**kwargs)
         
 
@@ -77,10 +77,12 @@ class JuegoGEKKO(Juego):
         armas_dependientes = [(i,x) for i,x in enumerate(self.castillo.armas) if x.depende is not None]
         dependencia_arma_i = {i:next(j for j,y in enumerate(self.castillo.armas) if y.nombre==x.depende.nombre) for i,x in armas_dependientes}
         armas_iniciales = self.armas_iniciales
+        capacidad_recoleccion_recurso_j = np.array([x.capacidad_recoleccion for x in self.castillo.recursos])
 
         # Definiendo variables
         
-        artesanos_dia_i_para_arma_j  = np.array([[modelo.Var(lb=0, integer=True, name=f"ArtesanosPara{x.nombre}Dia{i}") for x in self.castillo.armas] for i in range(self.total_dias)])
+        artesanos_dia_i_para_arma_j  = np.array([[modelo.Var(lb=0, integer=True, name=f"ArtesanosParaArma{x.nombre}Dia{i}") for x in self.castillo.armas] for i in range(self.total_dias)])
+        artesanos_dia_i_para_recurso_j  = np.array([[modelo.Var(lb=0, integer=True, name=f"ArtesanosParaRecurso{x.nombre}Dia{i}") for x in self.castillo.recursos] for i in range(self.total_dias)])
         dia_i_recurso_disponible_j  = np.array([[modelo.Var(lb=0, name=f"Recurso{x.nombre}Dia{i}") for x in self.castillo.recursos] for i in range(self.total_dias)])
         dia_i_arma_j_contruida = np.array([[modelo.Var(lb=0, integer=True, name=f"Arma{x.nombre}ConstruidaDia{i}") for x in self.castillo.armas] for i in range(self.total_dias)])
         dia_i_asignacion_guerreros_arma_j = np.array([[modelo.Var(lb=0, integer=True, name=f"GuerreroConArma{x.nombre}Dia{i}") for x in self.castillo.armas] for i in range(self.total_dias)])
@@ -90,7 +92,7 @@ class JuegoGEKKO(Juego):
         
         for i in range(self.total_dias):
             # La asignacion de artesanos no puede superar la cantidad de ellos
-            modelo.Equation(modelo.sum(artesanos_dia_i_para_arma_j[i]) <= self.total_artesanos)
+            modelo.Equation(modelo.sum(artesanos_dia_i_para_arma_j[i]) + modelo.sum(artesanos_dia_i_para_recurso_j[i]) <= self.total_artesanos)
             
             for j in range(artesanos_dia_i_para_arma_j.shape[1]):
                 # La asigancion de artesanos a construir 
@@ -110,7 +112,7 @@ class JuegoGEKKO(Juego):
                     modelo.Equation(CT_ij <= dia_i_recurso_disponible_j[i][j])
                 
                     # Actualizacion de los recursos por dia
-                    modelo.Equation(dia_i_recurso_disponible_j[i+1][j] == dia_i_recurso_disponible_j[i][j] - CT_ij)
+                    modelo.Equation(dia_i_recurso_disponible_j[i+1][j] == dia_i_recurso_disponible_j[i][j] - CT_ij + artesanos_dia_i_para_recurso_j[i][j]*capacidad_recoleccion_recurso_j[j])
             
             # Los guerreros asociados a 
             # las armas no pueden superar el maximo
@@ -147,15 +149,18 @@ class JuegoGEKKO(Juego):
         
         # Funcion objetivo
          
-        modelo.Maximize(np.sum(dia_i_armas_j_en_uso))
+        # modelo.Maximize(np.sum(dia_i_armas_j_en_uso))
+        modelo.Minimize(np.sum(artesanos_dia_i_para_arma_j) 
+                      + np.sum(artesanos_dia_i_para_recurso_j)
+                      + np.sum(dia_i_asignacion_guerreros_arma_j))
         
-        def solver(verbose=True, **kwargs) -> Tuple[Dict[int,Dict[str,int]],Dict[int,Dict[str,int]]]:
+        def solver(verbose=True, **kwargs) -> ResultModelo:
             try:
                 modelo.solve(disp=False)
             except Exception as e:
                 if verbose:
                     print("No puedes ganar :_(")
-                return None, None
+                return None, None, None
             
             self.print_situacion()
             
@@ -167,6 +172,7 @@ class JuegoGEKKO(Juego):
                     print()
                     print("Recursos disponible", [f"{self.castillo.recursos[i].nombre}: {x.value}" for i,x in enumerate(dia_i_recurso_disponible_j[i])])
                     print("Artesanos para armas", [f"{self.castillo.armas[i].nombre}: {x.value}" for i,x in enumerate(artesanos_dia_i_para_arma_j[i])])
+                    print("Artesanos para recursos", [f"{self.castillo.recursos[i].nombre}: {x.value}" for i,x in enumerate(artesanos_dia_i_para_recurso_j[i])])
                     print("Armas terminadas en el turno", [f"{self.castillo.armas[i].nombre}: {x.value}" for i,x in enumerate(dia_i_arma_j_contruida[i])])
                     print("Total de armas", [f"{x.nombre} {sum(c[0] for c in dia_i_arma_j_contruida[:i+1,j])}" for j,x in enumerate(self.castillo.armas)])
                     print("Guerreros armados", [f"{self.castillo.armas[i].nombre}: {x.value}" for i,x in enumerate(dia_i_asignacion_guerreros_arma_j[i])])
@@ -175,15 +181,19 @@ class JuegoGEKKO(Juego):
                     print("Ataque enemigo", ataque_enemigo_por_dia_i[i])
             
             asignacion_artesanos_armas: Dict[int,Dict[str,int]] = {}
+            asignacion_artesanos_recursos: Dict[int,Dict[str,int]] = {}
             asignacion_guerreros_armas: Dict[int,Dict[str,int]] = {}
             for i in range(self.total_dias):
                 asignacion_artesanos_armas[i] = {}
+                asignacion_artesanos_recursos[i] = {}
                 asignacion_guerreros_armas[i] = {}
                 for j,arma in enumerate(self.castillo.armas):
                     asignacion_artesanos_armas[i][arma.nombre] = artesanos_dia_i_para_arma_j[i][j][0]
                     asignacion_guerreros_armas[i][arma.nombre] = dia_i_asignacion_guerreros_arma_j[i][j][0]
-            
-            return asignacion_artesanos_armas, asignacion_guerreros_armas
+                for j,recurso in enumerate(self.castillo.recursos):
+                    asignacion_artesanos_recursos[i][recurso.nombre] = artesanos_dia_i_para_recurso_j[i][j][0]
+
+            return asignacion_artesanos_armas, asignacion_guerreros_armas, asignacion_artesanos_recursos
 
         return ModeloGEKKO(solver)
                         

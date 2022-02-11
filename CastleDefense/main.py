@@ -18,14 +18,6 @@ def juego2() -> JuegoGEKKO:
     
     return JuegoGEKKO(NIVELES_TEST[1])
 
-def juego22() -> JuegoGEKKO:
-    """
-    El juego prueba las armas iniciales
-    """
-    
-    return JuegoGEKKO(NIVELES_TEST[2])
-
-
 def juego3() -> JuegoSimulacion:
     """
     Simula el juego 1, ya con el usuario jugando
@@ -40,16 +32,23 @@ def juego4() -> JuegoSimulacion:
     
     return JuegoSimulacion(NIVELES_TEST[1])
 
+def juego5() -> JuegoGEKKO:
+    """
+    El juego prueba las armas iniciales
+    """
+    
+    return JuegoGEKKO(NIVELES_TEST[3])
+
 
 # juego = juego1()
 # juego.correr()
 # juego = juego2()
 # juego.correr()
-# juego = juego22()
-# juego.correr()
 # juego = juego3()
 # juego.correr()
 # juego = juego4()
+# juego.correr()
+# juego = juego5()
 # juego.correr()
 
 def seleccionar_opcion(encabezado: str, opciones: Dict[str,Tuple[str,Any]]) -> Any:

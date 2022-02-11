@@ -24,15 +24,19 @@ class Guerrero(Habitante):
         super().__init__("Guerrero", cantidad)
 
 class Recurso:
-    def __init__(self, nombre: str, cantidad: int) -> None:
+    def __init__(self, nombre: str, cantidad: int, capacidad_recoleccion: int = 0) -> None:
         self.nombre = nombre
         self.cantidad = cantidad
+        self.capacidad_recoleccion = capacidad_recoleccion
 
     def __str__(self) -> str:
-        return f"Recurso: {self.nombre}, Cantidad: {self.cantidad}"
+        return f"Recurso: {self.nombre}, Cantidad: {self.cantidad}, Recoleccion: {self.capacidad_recoleccion}"
     
     def __repr__(self) -> str:
         return str(self)
+    
+    def copy(self) -> 'Recurso':
+        return Recurso(self.nombre, self.cantidad, self.capacidad_recoleccion)
 
 class Arma:
     def __init__(self, ataque:int, depende: Optional["Arma"], nombre: str, recursos: Union[List[Recurso], Dict[str, int]], artesanos: Union[int,Artesano], guerreros: Union[int,Guerrero]) -> None:
@@ -132,9 +136,11 @@ class Tarea:
         self.nombre = nombre
         self.recursos = recursos
 
+ResultModelo = Tuple[Dict[int,Dict[str,int]],Dict[int,Dict[str,int]],Dict[int,Dict[str,int]]]
+
 class Modelo:
     
-    def solve(self) -> Tuple[Dict[int,Dict[str,int]],Dict[int,Dict[str,int]]]:
+    def solve(self) -> ResultModelo:
         raise NotImplementedError()
 
 class Juego:

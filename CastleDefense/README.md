@@ -20,5 +20,5 @@ Se implementó una API capaz de representar fácilmente este tipo de problemas c
 
 ## TODO
 
-- Informe mejorarlo
-- Tal vez hacer que se puedan agregarle recursos en el camino
+- Hacer más niveles.
+- README-Informe

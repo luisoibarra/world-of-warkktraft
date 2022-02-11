@@ -104,12 +104,33 @@ def __juego_prueba3() -> Nivel:
 
     return Nivel("Prueba 3", Nivel.FACIL, estrategia, castillo) 
 
+def __juego_prueba4() -> Nivel:
+    """
+    Prueba la recoleccion de recursos 
+    """
+    recursos = [
+        Recurso("Oro", 0, 100)
+    ]
+    
+    arma1 = Arma(10, None, "Parte1", [Recurso("Oro", 100)], Artesano(1), Guerrero(1))
+    
+    castillo = Castillo(Artesano(3), Guerrero(5), recursos, [arma1])
+    
+    estrategia = EstrategiaEnemiga([
+        AtaqueEnemigo(0),
+        AtaqueEnemigo(0),
+        AtaqueEnemigo(0),
+        AtaqueEnemigo(0),
+        AtaqueEnemigo(40),
+    ])
 
+    return Nivel("Prueba 4", Nivel.FACIL, estrategia, castillo) 
 
 NIVELES_TEST = [
     __juego_prueba1(),
     __juego_prueba2(),
     __juego_prueba3(),
+    __juego_prueba4(),
 ]
 
 # TODO

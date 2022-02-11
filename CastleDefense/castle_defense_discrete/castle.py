@@ -60,6 +60,9 @@ class AtaqueEnemigo:
     def __init__(self, poder: int) -> None:
         self.poder = poder
 
+    def __str__(self) -> str:
+        return f"Ataque: {self.poder}"
+
 class EstrategiaEnemiga:
     def __init__(self, ataques: List[Union[AtaqueEnemigo,int]]) -> None:
         self.ataques = [AtaqueEnemigo(x) if isinstance(x, int) else x for x in ataques]
@@ -143,7 +146,7 @@ Suerte, esperemos que no queden solo ruinas para los aliados."""
     
     def print_situacion(self):
         print()
-        print(f"Se espera un ataque de {self.total_dias} dias")
+        print(f"Se espera un ataque de {len(self.estrategia_enemiga.ataques)} dias")
         print(f"Cuentas inicialmente con:")
         print(f"Recursos")
         for r in self.castillo.recursos:

@@ -108,8 +108,8 @@ def juego4() -> JuegoSimulacion:
 
 
 # juego = juego1()
-juego = juego2()
+# juego = juego2()
 # juego = juego3()
-# juego = juego4()
+juego = juego4()
 
 juego.correr()

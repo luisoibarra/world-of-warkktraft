@@ -1,4 +1,4 @@
-from typing import List, Optional, Tuple, Dict
+from typing import Callable, List, Optional, Tuple, Dict
 
 from castle import Arma, AtaqueEnemigo, Castillo, Juego, Modelo, Recurso
 
@@ -397,7 +397,7 @@ def devolver_accion(estado: EstadoDeJuego) -> Accion:
     Devuelve la accion que desea realizar el usuario
     """
 
-    possible_accions = {
+    acciones_posibles = {
         "1": ("Asignar artesano a arma",AsignarArtesanoArma),
         "2": ("Asignar guerrero a arma",AsignarGuerreroArma),
         "3": ("Desasignar artesano a arma",DesasignarArtesanoArma),
@@ -406,26 +406,26 @@ def devolver_accion(estado: EstadoDeJuego) -> Accion:
     }
 
     print("Seleccione la accion a realizar:")
-    for opt, (msg, tipo_accion) in possible_accions.items():
+    for opt, (msg, tipo_accion) in acciones_posibles.items():
         print(f"{opt}: {msg}")
     accion = None
-    while accion not in possible_accions:
+    while accion not in acciones_posibles:
         accion = input(">>")
-        if accion in possible_accions:
-            _,tipo_accion = possible_accions[accion]
+        if accion in acciones_posibles:
+            _,tipo_accion = acciones_posibles[accion]
             return tipo_accion.accion_desde_entrada()
         else:
             print("Elección inválida")
 
 
-
-
 class ModeloSimulacion(Modelo):
     
-    def __init__(self, juego: 'JuegoSimulacion') -> None:
+    def __init__(self, juego: 'JuegoSimulacion', pedir_accion: Callable[[EstadoDeJuego], Accion], retroalimentacion_accion: Callable[[str], None]) -> None:
         super().__init__()
         self.juego = juego # Desde aqui es accesible el castillo y la estrategia del enemigo
-    
+        self.pedir_accion = pedir_accion
+        self.retroalimentacion_accion = retroalimentacion_accion
+        
     def solve(self):
         """
         Recrea el juego en interacción con el usuario
@@ -434,8 +434,9 @@ class ModeloSimulacion(Modelo):
         estado = EstadoDeJuego(juego=self.juego)
         while estado.estado != estado.CORRIENDO:
             print(estado)
-            accion = devolver_accion(estado)
+            accion = self.pedir_accion(estado)
             msg, estado = estado.reaccionar_a(accion)
+            self.retroalimentacion_accion(msg)
             print(msg)
 
         print("Has", estado.estado)
@@ -444,4 +445,4 @@ class ModeloSimulacion(Modelo):
 class JuegoSimulacion(Juego):
     
     def generar_modelo(self) -> Modelo:
-        return ModeloSimulacion(self)
+        return ModeloSimulacion(self, devolver_accion, lambda x: None)

@@ -1,115 +1,93 @@
-from typing import Tuple
+from typing import Any, Tuple
 from castle_defense_discrete.castle_simulation import JuegoSimulacion
 from castle_defense_discrete.castle import *
 from castle_defense_discrete.castle_gekko import JuegoGEKKO
-
-def configuracion_juego1() -> Tuple[Castillo,EstrategiaEnemiga]:
-    recursos = [
-        Recurso("Madera", 100),
-        Recurso("Hierro", 100),
-        Recurso("Cuero", 100),
-    ]
-    # recursos = { # Se puede usar un diccionario para los recursos
-    #     "Madera": 100,
-    #     "Hierro": 100,
-    #     "Cuero": 100,
-    # }
-
-    armas = [
-        Arma(10, None, "Hacha", [
-            Recurso("Madera", 15),
-            Recurso("Hierro", 5),
-            Recurso("Cuero", 0), # Se puede omitir si no se pone
-        ], Artesano(1), Guerrero(1)),
-        Arma(10, None, "Espada", [
-            Recurso("Hierro", 15), # El orden no tiene que ser el mismo
-            Recurso("Madera", 5),
-        ], Artesano(1), 1), # Se puede simplemente poner el número 
-        Arma(30, None, "Catapulta", { # Como diccionario también funciona
-            "Madera": 10,
-            "Hierro": 20,
-            "Cuero": 20,
-        }, 2, Guerrero(2)), # También en el artesano
-    ]
-
-    castillo = Castillo(Artesano(10), Guerrero(10), recursos, armas)
-
-    ataque_enemigo = [
-        # Paz
-        0, # Se puede poner un número normal
-        AtaqueEnemigo(0),
-        AtaqueEnemigo(0),
-        # Ataque
-        AtaqueEnemigo(10),
-        AtaqueEnemigo(10),
-        AtaqueEnemigo(10),
-        AtaqueEnemigo(150),
-    ]
-
-    estrategia = EstrategiaEnemiga(ataque_enemigo)
-    
-    return castillo, estrategia
+from levels import NIVELES_DIFICIL, NIVELES_FACIL, NIVELES_MEDIO, NIVELES_TEST
 
 def juego1() -> JuegoGEKKO:
     """
     Prueba los fundamentos del juego
     """
     
-    castillo, estrategia = configuracion_juego1()
-
-    return JuegoGEKKO(castillo, estrategia)
-
-def configuracion_juego2() -> Tuple[Castillo,EstrategiaEnemiga]:
-    recursos = [
-        Recurso("Oro", 1000)
-    ]
-    
-    arma1 = Arma(0, None, "Parte1", [Recurso("Oro", 100)], Artesano(2), Guerrero(10000))
-    arma2 = Arma(0, arma1, "Parte2", [Recurso("Oro", 200)], Artesano(3), Guerrero(10000))
-    arma3 = Arma(100, arma2, "ArmaFinal", [Recurso("Oro", 200)], Artesano(4), Guerrero(2))
-    
-    castillo = Castillo(Artesano(8), Guerrero(5), recursos, [arma1,arma2,arma3])
-    
-    estrategia = EstrategiaEnemiga([
-        AtaqueEnemigo(0),
-        AtaqueEnemigo(0),
-        AtaqueEnemigo(0),
-        AtaqueEnemigo(0),
-        AtaqueEnemigo(200),
-    ])
-    return castillo, estrategia
+    return JuegoGEKKO(NIVELES_TEST[0])
 
 def juego2() -> JuegoGEKKO:
     """
     El juego prueba la dependencia de las armas
     """
     
-    castillo, estrategia = configuracion_juego2()
-    
-    return JuegoGEKKO(castillo, estrategia)
+    return JuegoGEKKO(NIVELES_TEST[1])
 
 def juego3() -> JuegoSimulacion:
     """
     Simula el juego 1, ya con el usuario jugando
     """
     
-    castillo, estrategia = configuracion_juego1()
-    
-    return JuegoSimulacion(castillo, estrategia)
+    return JuegoSimulacion(NIVELES_TEST[0])
 
 def juego4() -> JuegoSimulacion:
     """
     Simula el juego 2, ya con el usuario jugando
     """
     
-    castillo, estrategia = configuracion_juego2()
-    
-    return JuegoSimulacion(castillo, estrategia)
+    return JuegoSimulacion(NIVELES_TEST[1])
 
 
 # juego = juego1()
+# juego.correr()
 # juego = juego2()
+# juego.correr()
 # juego = juego3()
-juego = juego4()
+# juego.correr()
+# juego = juego4()
+# juego.correr()
 
-juego.correr()
+def seleccionar_opcion(encabezado: str, opciones: Dict[str,Tuple[str,Any]]) -> Any:
+    value = None
+
+    def print_opciones():
+        for x in opciones:
+            nombre,_ = opciones[x]
+            print(x,"->",nombre)
+        print()
+
+    print(encabezado)
+    print()
+    print_opciones()
+    while True:
+        seleccion = input(">> ")
+        if seleccion not in opciones:
+            print("Selección inválida, las opciones son:")
+            print_opciones()
+        else:
+            _,value = opciones[seleccion]
+            break
+    return value
+
+def main():
+    metodo_de_juego = {
+        "0": ("Método óptimo", JuegoGEKKO),
+        "1": ("Jugador humano", JuegoSimulacion),
+    }
+    dificultad_de_juego = {
+        "t": ("Test", NIVELES_TEST),
+        "0": ("Fácil", NIVELES_FACIL),
+        "1": ("Medio", NIVELES_MEDIO),
+        "2": ("Difícil", NIVELES_DIFICIL),
+    }
+
+    print("Bienvenido a CastleDefense!!")
+    print()
+
+    tipo_de_juego = seleccionar_opcion("Seleccione el método de juego:", metodo_de_juego)
+    niveles_de_dificultad = seleccionar_opcion("Seleccione la dificultad del nivel", dificultad_de_juego)
+
+    niveles_de_dificultad = {str(i): (x.nombre, x) for i,x in enumerate(niveles_de_dificultad)}
+    nivel_seleccionado = seleccionar_opcion("Seleccione el nivel", niveles_de_dificultad)
+
+    juego = tipo_de_juego(nivel_seleccionado)
+
+    juego.correr()
+
+if __name__ == "__main__":
+    main()

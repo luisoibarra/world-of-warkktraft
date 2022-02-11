@@ -77,12 +77,19 @@ class Modelo:
         pass
 
 class Juego:
-    def __init__(self, castillo: Castillo, estrategia_enemiga: EstrategiaEnemiga) -> None:
-        self.castillo = castillo    
-        self.estrategia_enemiga = estrategia_enemiga
-        self.acomodar_datos_castillo()
-        
-    def acomodar_datos_castillo(self):
+    def __init__(self, nivel: 'Nivel') -> None:
+        self.nivel = nivel
+        self._acomodar_datos_castillo()
+
+    @property
+    def castillo(self):
+        return self.nivel.castillo
+
+    @property
+    def estrategia_enemiga(self):
+        return self.nivel.estrategia_enemiga
+
+    def _acomodar_datos_castillo(self):
         """
         Realiza una modificación al `castillo` añadiendo supuestos básicos del modelo
         y realiza comprobaciones básicas
@@ -179,3 +186,15 @@ def _convertir_en_artesano_guerrero(numero: Union[int, Artesano, Guerrero], tipo
     if isinstance(numero, int):
         return tipo_esperado(numero)    
     return numero
+
+class Nivel:
+
+    FACIL = 1
+    MEDIO = 2
+    DIFICIL = 3
+
+    def __init__(self, nombre: str, dificultad:int, estrategia_enemiga: EstrategiaEnemiga, castillo: Castillo) -> None:
+        self.nombre = nombre
+        self.dificultad = dificultad
+        self.estrategia_enemiga = estrategia_enemiga
+        self.castillo = castillo

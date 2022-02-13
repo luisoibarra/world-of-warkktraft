@@ -105,9 +105,20 @@ class Castillo:
         cant_tipos_recursos = len(self.recursos)
         
         for arma in self.armas:
-            faltantes = set([s.nombre for s in self.recursos]).difference([x.nombre for x in arma.recursos])
-            for f in faltantes: # Añadir con costo 0 los recursos que no se definieron en las armas
-                arma.recursos.append(Recurso(f, 0))
+            # Añadir recursos faltantes 
+            nuevos_recursos = []
+            for recurso_original in self.recursos:
+                # Se les asigna una copia de los recursos originales para que este recurso contenga toda la informacion necesaria
+                nuevo_recurso = recurso_original.copy()
+                try:
+                    recurso = next(x for x in arma.recursos if x.nombre == recurso_original.nombre)
+                    nuevo_recurso.cantidad = recurso.cantidad
+                except StopIteration:
+                    # Añadir con costo 0 los recursos que no se definieron en las armas
+                    nuevo_recurso.cantidad = 0
+                nuevos_recursos.append(nuevo_recurso)
+            arma.recursos = nuevos_recursos
+            
             # Ordenar los recursos del castillo por nombre para que coincidan en índice con los recursos del castillo
             arma.recursos.sort(key=lambda x: x.nombre)
             if cant_tipos_recursos != len(arma.recursos):

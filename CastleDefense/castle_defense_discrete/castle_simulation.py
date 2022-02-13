@@ -209,7 +209,7 @@ class EstadoDeJuego:
         self.guerreros = guerreros
         self.ataques_por_turno = ataques_por_turno
         self.turno = turno
-        self.estado = estado,
+        self.estado = estado
         # Diccionario nombre de arma -> cantidad de artesanos asignados a esta
         self.asignacion_armas_artesanos = asignacion_armas_artesanos
         # Diccionario nombre de arma -> cantidad de guerreros asignados a esta
@@ -232,6 +232,21 @@ class EstadoDeJuego:
     @property
     def guerreros_usados(self):
         return sum(self.asignacion_armas_guerreros.values())
+
+    @property
+    def recursos_disponibles(self):
+        def recursos_usados_en_el_turno(nombre_recurso):
+            recursos_usados = 0
+            for nombre_arma in self.asignacion_armas_artesanos:
+                arma = self.armas[nombre_arma]
+                recurso_a_pagar = next(x.cantidad for x in arma.recursos if x.nombre == nombre_recurso)
+                recursos_usados += (self.asignacion_armas_artesanos[nombre_arma] // arma.artesanos.cantidad) * recurso_a_pagar
+            return recursos_usados
+        recursos_disponibles = {
+            nombre: self._copiar_asignar_recurso(nombre, recurso.cantidad - recursos_usados_en_el_turno(nombre)) 
+                    for nombre, recurso in self.recursos.items()
+            }
+        return recursos_disponibles
 
     def reaccionar_a(self, accion: Accion) -> Tuple[str, 'EstadoDeJuego']:
         """
@@ -275,10 +290,10 @@ class EstadoDeJuego:
                 if self.armas_construidas[arma_que_depende.nombre] <= cant_dep_arma:
                     return "No tiene la cantidad de armas suficiente para construir una nueva arma de este tipo", self.copy_with()
 
-            feedback, recursos = self._comprobar_recursos_asignar_artesanos(accion.nombre_arma, self.recursos, artesanos_arma)
+            feedback, recursos = self._comprobar_recursos_asignar_artesanos(accion.nombre_arma, self.recursos_disponibles, artesanos_arma)
             if recursos is None:
                 return feedback, self.copy_with()
-            return "OK", self.copy_with(asignacion_armas_artesanos=artesanos_arma, recursos=recursos)
+            return "OK", self.copy_with(asignacion_armas_artesanos=artesanos_arma)
         else:
             return "La asignación de artesanos está al máximo", self.copy_with()
 
@@ -291,10 +306,10 @@ class EstadoDeJuego:
         artesanos_arma = self.asignacion_armas_artesanos.copy()
         if artesanos_arma[accion.nombre_arma] > 0:
             artesanos_arma[accion.nombre_arma] -= 1
-            feedback, recursos = self._comprobar_recursos_desasignar_artesanos(accion.nombre_arma, self.recursos, artesanos_arma)
+            feedback, recursos = self._comprobar_recursos_desasignar_artesanos(accion.nombre_arma, self.recursos_disponibles, artesanos_arma)
             if recursos is None:
                 return feedback, self.copy_with()
-            return "OK", self.copy_with(asignacion_armas_artesanos=artesanos_arma, recursos=recursos)
+            return "OK", self.copy_with(asignacion_armas_artesanos=artesanos_arma)
         else:
             return "La asignación de artesanos está en 0", self.copy_with()
 
@@ -337,13 +352,17 @@ class EstadoDeJuego:
         recursos_dicc_vacio = { x:0 for x in self.recursos }
         nuevas_armas_construidas = self._armas_a_construir_en_turno(self.asignacion_armas_artesanos)
         nuevas_armas = { x:self.armas_construidas[x] + nuevas_armas_construidas[x] for x in self.armas_construidas}
-        nuevos_recursos = self._recursos_a_recolectar_en_turno(self.asignacion_recursos_artesanos)
-        if self.turno == len(self.ataques_por_turno):
+        nuevos_recursos = self._recursos_a_recolectar_en_turno(self.asignacion_recursos_artesanos, self.recursos_disponibles)
+        if self.turno == len(self.ataques_por_turno)-1 and self.dano_actual >= self.ataques_por_turno[self.turno].poder:
             return "GANÓ", self.copy_with(turno=siguiente_turno, 
                                           armas_construidas=nuevas_armas,
                                           asignacion_armas_artesanos=armas_dicc_vacio.copy(), 
                                           asignacion_armas_guerreros=armas_dicc_vacio.copy(),
                                           estado=self.GANADO)
+        
+        if self.turno >= len(self.ataques_por_turno):
+            return self.estado, self.copy_with()
+        
         if self.dano_actual >= self.ataques_por_turno[self.turno].poder:
             return "OK", self.copy_with(turno=siguiente_turno,
                                         armas_construidas=nuevas_armas,
@@ -352,11 +371,15 @@ class EstadoDeJuego:
                                         asignacion_recursos_artesanos=recursos_dicc_vacio.copy(),
                                         recursos=nuevos_recursos)
         else:
-            self.dano_actual < self.ataques_por_turno[self.turno].poder
-            return "PERDIÓ el daño del enemigo supera al que puede causar", self.copy_with(turno=siguiente_turno,estado=self.PERDIDO) 
+            # self.dano_actual < self.ataques_por_turno[self.turno].poder
+            return "PERDIÓ el daño del enemigo supera al que puede causar", self.copy_with(estado=self.PERDIDO) 
 
 
     def _reaccionar_a_pedir_hint(self, accion: PedirHint) -> Tuple[str, 'EstadoDeJuego']:
+        
+        if self.turno >= len(self.ataques_por_turno):
+            return "Juego Terminado", self.copy_with()
+        
         castillo = Castillo(self.artesanos, 
                             self.guerreros, 
                             [x for x in self.recursos.values()],
@@ -367,18 +390,18 @@ class EstadoDeJuego:
         modelo = juego.generar_modelo()
         asignacion_artesanos, asignacion_guerreros, asignacion_artesanos_recursos = modelo.solve(verbose=False)
         
-        if asignacion_artesanos is not None and asignacion_guerreros is not None:
+        if asignacion_artesanos is not None and asignacion_guerreros is not None and asignacion_artesanos_recursos is not None:
             hint = "Artesanos Armas:\n"
             for nombre_arma, asignado in asignacion_artesanos[0].items():
                 if asignado != 0:
                     hint += f"{nombre_arma} -> {asignado} "
             hint += "\n"
-            hint += "Guerreros Armas:\n: "
+            hint += "Guerreros Armas:\n"
             for nombre_arma, asignado in asignacion_guerreros[0].items():
                 if asignado != 0:
                     hint += f"{nombre_arma} -> {asignado} "
             hint += "\n"
-            hint += "Artesanos Recursos:\n: "
+            hint += "Artesanos Recursos:\n"
             for nombre_recurso, asignado in asignacion_artesanos_recursos[0].items():
                 if asignado != 0:
                     hint += f"{nombre_recurso} -> {asignado} "
@@ -433,8 +456,7 @@ class EstadoDeJuego:
                 zip(recursos,
                     [recursos_actuales[x].cantidad for x in recursos],
                     [next(x.cantidad for x in arma.recursos if x.nombre == nombre) for nombre in recursos])]
-
-        nuevos_recursos = {recurso:Recurso(recurso, total + precio) for (recurso, total, precio) in recursos_totales_a_apagar}
+        nuevos_recursos = {recurso:self._copiar_asignar_recurso(recurso, total + precio) for (recurso, total, precio) in recursos_totales_a_apagar}
         return "OK", nuevos_recursos
 
     def _comprobar_recursos_asignar_artesanos(self, nombre_arma:str, 
@@ -458,7 +480,7 @@ class EstadoDeJuego:
 
         # Todos los precios se cumplen
         if all(total >= precio for _,total,precio in recursos_totales_a_apagar):
-            nuevos_recursos = {recurso:Recurso(recurso, total - precio) for (recurso, total, precio) in recursos_totales_a_apagar}
+            nuevos_recursos = {recurso:self._copiar_asignar_recurso(recurso, total-precio) for (recurso, total, precio) in recursos_totales_a_apagar}
             return "OK", nuevos_recursos
         return f"No se satisfacen las necesidades de los recursos {' '.join([x for x,t,p in recursos_totales_a_apagar if t < p])}", None
 
@@ -482,13 +504,19 @@ class EstadoDeJuego:
         por_construir = sum(constr for x,constr in self._armas_a_construir_en_turno(asignacion_armas_artesanos).items() if x == nombre_arma)
         return construidas + por_construir
 
-    def _recursos_a_recolectar_en_turno(self, asignacion_recursos_artesanos: Dict[str,int]) -> Dict[str,int]:
-        nuevos_recursos = self.recursos.copy()
+    def _recursos_a_recolectar_en_turno(self, asignacion_recursos_artesanos: Dict[str,int], recursos: Dict[str,Recurso]) -> Dict[str,int]:
+        nuevos_recursos = recursos.copy()
         for recurso_nombre in asignacion_recursos_artesanos:
-            recurso = self.recursos[recurso_nombre].copy()
+            recurso = recursos[recurso_nombre].copy()
             recurso.cantidad += recurso.capacidad_recoleccion * asignacion_recursos_artesanos[recurso_nombre]
             nuevos_recursos[recurso_nombre] = recurso
         return nuevos_recursos            
+
+    def _copiar_asignar_recurso(self, nombre_recurso: str, cantidad: int) -> Recurso:
+        recurso = self.recursos[nombre_recurso]
+        recurso = recurso.copy()
+        recurso.cantidad = cantidad
+        return recurso
 
     def __str__(self) -> str:
         nl = "\n"
@@ -498,7 +526,9 @@ Turno {self.turno}
 Artesanos disponibles: {self.artesanos - self.artesanos_usados}
 Guerreros disponibles: {self.guerreros - self.guerreros_usados}
 Recursos disponibles: 
-{nl.join([f"{x}: {y}" for x,y in self.recursos.items()])}
+{nl.join([f"{y}" for x,y in self.recursos_disponibles.items()])}
+Armas construibles: 
+{nl.join([f"{y}" for x,y in self.armas.items()])}
 Daño a realizar: {self.dano_actual}
 Daño a repeler: {self.ataques_por_turno[self.turno] if self.turno < len(self.ataques_por_turno) else 'No Ataque'}
 Asiganciones Armas Artesanos:
@@ -569,12 +599,15 @@ class ModeloSimulacion(Modelo):
         """
         
         asignacion_artesanos_armas: Dict[int,Dict[str,int]] = {}
+        asignacion_artesanos_recursos: Dict[int,Dict[str,int]] = {}
         asignacion_guerreros_armas: Dict[int,Dict[str,int]] = {}
         
         estado = EstadoDeJuego(juego=self.juego)
         while estado.estado != estado.CORRIENDO:
             asignacion_artesanos_armas[estado.turno] = estado.asignacion_armas_artesanos.copy()
             asignacion_guerreros_armas[estado.turno] = estado.asignacion_armas_guerreros.copy()
+            asignacion_artesanos_recursos[estado.turno] = estado.asignacion_recursos_artesanos.copy()
+            input("Enter para continuar")
             print(estado)
             accion = self.pedir_accion(estado)
             msg, estado = estado.reaccionar_a(accion)

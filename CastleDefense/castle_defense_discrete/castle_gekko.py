@@ -88,7 +88,7 @@ class JuegoGEKKO(Juego):
         dia_i_asignacion_guerreros_arma_j = np.array([[modelo.Var(lb=0, integer=True, name=f"GuerreroConArma{x.nombre}Dia{i}") for x in self.castillo.armas] for i in range(self.total_dias)])
         dia_i_armas_j_en_uso = np.array([[modelo.Var(lb=0, integer=True, name=f"Arma{x.nombre}EnUsoDia{i}") for x in self.castillo.armas] for i in range(self.total_dias)])
         
-        # Añadiendo restricciones
+        # Añadiendo restricciones de cada día
         
         for i in range(self.total_dias):
             # La asignacion de artesanos no puede superar la cantidad de ellos

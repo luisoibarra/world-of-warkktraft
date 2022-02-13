@@ -5,6 +5,9 @@ API para crear niveles del juego
 from typing import Dict, List, Optional, Tuple, Union
     
 class Habitante:
+    """
+    Representa la `cantidad` de habitantes de tipo `nombre` para determinada acción
+    """
     def __init__(self, nombre: str, cantidad: int) -> None:
         self.nombre = nombre
         self.cantidad = cantidad
@@ -16,14 +19,26 @@ class Habitante:
         return f"{self.nombre}, Cantidad: {self.cantidad}"
 
 class Artesano(Habitante):
+    """
+    Representa la `cantidad` de habitantes Artesanos para determinada acción
+    """
     def __init__(self, cantidad: int) -> None:
         super().__init__("Artesano", cantidad)
 
 class Guerrero(Habitante):
+    """
+    Representa la `cantidad` de habitantes Guerreros para determinada acción
+    """
     def __init__(self, cantidad: int) -> None:
         super().__init__("Guerrero", cantidad)
 
 class Recurso:
+    """
+    Representa la `cantidad` de recursos de tipo `nombre` para determinada acción.
+
+    Representa la `cantidad` de recursos disponibles y su capacidad de recolección por turno
+    """
+
     def __init__(self, nombre: str, cantidad: int, capacidad_recoleccion: int = 0) -> None:
         self.nombre = nombre
         self.cantidad = cantidad
@@ -39,6 +54,12 @@ class Recurso:
         return Recurso(self.nombre, self.cantidad, self.capacidad_recoleccion)
 
 class Arma:
+    """
+    Representa el `ataque` de un arma de tipo `nombre`. Describe la dependencia de construcción de 
+    dicha arma, la cantidad de artesanos y querreros necesarios para hacerla funcionar y los recursos necesarios
+    para hacerla
+    """
+
     def __init__(self, ataque:int, depende: Optional["Arma"], nombre: str, recursos: Union[List[Recurso], Dict[str, int]], artesanos: Union[int,Artesano], guerreros: Union[int,Guerrero]) -> None:
         self.ataque = ataque
         self.depende = depende
@@ -54,6 +75,10 @@ class Arma:
         return str(self)
     
 class Castillo:
+    """
+    Representa el castillo a defender. Contiene toda la información inicial
+    necesaria.
+    """
     def __init__(self, artesanos: Union[int,Artesano]
                      , guerreros: Union[int,Guerrero]
                      , recursos: Union[List[Recurso], Dict[str, int]]
@@ -121,6 +146,9 @@ class Castillo:
                 
 
 class AtaqueEnemigo:
+    """
+    Representa un solo ataque enemigo con su `poder`.
+    """
     def __init__(self, poder: int) -> None:
         self.poder = poder
 
@@ -128,23 +156,45 @@ class AtaqueEnemigo:
         return f"Ataque: {self.poder}"
 
 class EstrategiaEnemiga:
+    """
+    Representa la estrategia completa del enemigo durante todo el juego. Consiste en una
+    lista de AtaqueEnemigo, la cual es el ataque realizado en eel i-esimo turno. 
+    """
     def __init__(self, ataques: List[Union[AtaqueEnemigo,int]]) -> None:
         self.ataques = [AtaqueEnemigo(x) if isinstance(x, int) else x for x in ataques]
 
-class Tarea:
-    def __init__(self, nombre: str, recursos: List[Recurso]) -> None:
-        self.nombre = nombre
-        self.recursos = recursos
 
+
+class Nivel:
+    """
+    Representa una estructura que agrupa metadatos sobre el juego a realizar.
+    """
+
+    FACIL = 1
+    MEDIO = 2
+    DIFICIL = 3
+
+    def __init__(self, nombre: str, dificultad:int, estrategia_enemiga: EstrategiaEnemiga, castillo: Castillo) -> None:
+        self.nombre = nombre
+        self.dificultad = dificultad
+        self.estrategia_enemiga = estrategia_enemiga
+        self.castillo = castillo
+
+# 
 ResultModelo = Tuple[Dict[int,Dict[str,int]],Dict[int,Dict[str,int]],Dict[int,Dict[str,int]]]
 
 class Modelo:
-    
+    """
+    Representa el modelo final para la solución del problema.
+    """
     def solve(self) -> ResultModelo:
         raise NotImplementedError()
 
 class Juego:
-    def __init__(self, nivel: 'Nivel') -> None:
+    """
+    Representa la instancia de juego que realizará nivel.
+    """
+    def __init__(self, nivel: Nivel) -> None:
         self.nivel = nivel
 
     @property
@@ -229,15 +279,3 @@ def _convertir_en_artesano_guerrero(numero: Union[int, Artesano, Guerrero], tipo
     if isinstance(numero, int):
         return tipo_esperado(numero)    
     return numero
-
-class Nivel:
-
-    FACIL = 1
-    MEDIO = 2
-    DIFICIL = 3
-
-    def __init__(self, nombre: str, dificultad:int, estrategia_enemiga: EstrategiaEnemiga, castillo: Castillo) -> None:
-        self.nombre = nombre
-        self.dificultad = dificultad
-        self.estrategia_enemiga = estrategia_enemiga
-        self.castillo = castillo

@@ -1,16 +1,8 @@
 # Castle Defense
 
-Se presenta un juego sencillo en el cual se necesita defender un castillo de oleadas de ataques. Para la defensa el castillo posee unos recursos iniciales y una fuerza de trabajo constituída por Artesanos y Guerreros. Los Artesanos pueden construir Armas que sirven para defender el castillo, estas Armas solo cuentan en la defensa mientras los Guerreros las utilicen.
+Se presenta un juego sencillo en el cual se necesita defender un castillo de oleadas de ataques. Se modeló el juego de manera tal que se puede saber las acciones a realizar para ganar y se creó un simulador del juego para poder jugarlo.
 
-## Modelo
-
-Se modeló el problema anterior como un problema de optimización lineal discreto usando el GEKKO como solucionador de problemas. Para más información ver `castle_defense_discrete/CastleDefense.ipynb`
-
-## API
-
-Se implementó una API capaz de representar fácilmente este tipo de problemas con el objetivo de poder usar la misma representación para diferentes objetivos, como por ejemplo usar otro solucionador o hacer un simulador del juego en el que el usuario interactúe y sea el que tome la decisiones.
-
-## Correr el programa
+## Uso del programa
 
 1. Correr setup.sh. Esto instalará los paquetes necesarios de Python, por lo que solo es necesario correrlo la primera vez.
 
@@ -18,7 +10,100 @@ Se implementó una API capaz de representar fácilmente este tipo de problemas c
 
 3. En la terminal correr `python3 main.py` o `python main.py`.
 
-## TODO
 
-- Hacer más niveles.
-- README-Informe
+## Enunciado del Juego
+
+Estás en un castillo que será asediado por una fuerza que te supera, por suerte tu salvación se encuentra a unos N días de espera. Tu misión es resistir hasta que lleguen los refuerzos. En los almacenes del castillo se tienes unos recursos X los cuales te ayudarán. 
+
+Entre tus filas cuentas con una fuerza de A artesanos para confeccionar las armas necesarias y recolectar recursos y G guerreros que puedes asignar a las armas construídas para defenderte. Las armas se pueden demorar varios días en construirse y necesitan ser utilizadas por uno o varios guerreros para que sean efectivas.
+
+El enemigo tardará unos D días en llegar y luego atacará en oleadas cada vez más fuertes, aprovecha el tiempo que tienes para irte preparando para la dura batalla, recolecta recursos, construye armas que puedan contener las arremetidas furiosas de los malvados que quieren tomar las vidas de tus súbditos. En las batallas asígnales estas armas a tus guerreros para que puedan luchar. Si todo sale bien seguro saldrás victorioso.
+
+Suerte, esperemos que no queden solo ruinas para los aliados.
+
+## API
+
+Se implementó una API capaz de representar fácilmente este tipo de problemas con el objetivo de poder usar la misma representación para diferentes objetivos, como por ejemplo usar otro solucionador o hacer un simulador del juego en el que el usuario interactúe y sea el que tome la decisiones. Esta API consiste en un conjunto de clases cada una con una responsabilidad diferente.
+
+- Artesano
+- Guerrero
+- Arma
+- Recurso
+- Castillo
+- AtaqueEnemigo
+- EstrategiaEnemiga
+- Nivel
+
+## Modelo
+
+Se modeló el problema como un problema de optimización lineal discreto. Para más información ver `CastleDefense.ipynb`. Este archivo contiene las restricciones y variables utilizadas en el modelado de este así como una descripción más detallada del proceso.
+
+El problema se implementó usando GEKKO como solucionador de problemas de optimización. GEKKO permite una representación más simple de las variables y función objetivo del problema haciendo que sea más fácil de leer e implementar. La implementación se encuentra en `castle_defense_discrete/castle_gekko.py`.
+
+### GEKKO
+
+Para trabajar con GEKKO primero hace falta crear un modelo de GEKKO y configurarlo para que pueda resolver problemas de optimización lineal en enteros:
+
+```python
+from gekko import GEKKO
+
+modelo = GEKKO(remote=False)
+        modelo.options.SOLVER = 1  # APOPT is an MINLP solver
+        modelo.options.LINEAR = 1 # Is a MILP
+```
+
+Para crear variables en GEKKO se usa el modelo previo para definirlas, en el constructor de la variable se le ponen distintos datos como por el ejemplo el nombre, los límites inferiores y superiores, si es entera la variable. Estas variables luego de que el problema sea resuelto contienen el valor óptimo encontrado para ellas.
+
+```python
+# Variable entera del modelo con límite inferior 0 y nombre "x"
+variable_entera = modelo.Var(lb=0, integer=True, name="x")
+# Variable no entera del modelo con límite inferior 0 y nombre "y"
+variable_no_entera = modelo.Var(lb=0, integer=False, name="y")
+```
+
+Para agregarle restricciones al modelo se usan ecuaciones que pueden operar con variables del modelo y también con constantes.
+
+```python
+# x < y + 10
+modelo.Equation(variable_entera < variable_no_entera + 10)
+# x + y > 30
+modelo.Equation(modelo.sum([variable_entera, variable_no_entera]) > 30)
+```
+
+La función objetivo se define operando las variables del problema con constantes en caso de ser necesario:
+
+```python
+# Minimiza x+y
+modelo.Minimize(variable_entera + variable_no_entera)
+# Maximiza -(x + 10) + 2 * y
+modelo.Maximize(-(variable_entera + 10) + 2 * variable_no_entera)
+```
+
+Resolver el modelo una vez definidas todas las restricciones variables
+
+```python
+
+# Si lanza una excepción es porque el problema no tiene solución. 
+# En las variables creadas se encuentran los valores que conducen al óptimo
+modelo.solve()
+
+```
+
+## Simulación
+
+Para que el usuario pueda jugar se implementó un modelo del juego que interactúa con el ambiente y este le brinda las acciones a realizar para ir avanzando en el progreso del juego. Se crearon diferentes clases para este modelo, las cuales se encuentran en `castle_defense_discrete/castle_simulation.py`:
+
+- Accion: representan las posibles maneras de interactuar con es estado del juego.
+  - AsignarArtesanoArma
+  - DesasignarArtesanoArma
+  - AsignarArtesanoRecurso
+  - DesasignarArtesanoRecurso
+  - AsignarGuerreroArma
+  - DesasignarGuerreroArma
+  - PedirHint
+  - PasarTurno
+- EstadoDeJuego: Contiene el estado del juego y reacciona a las diferentes acciones devolviendo un nuevo EstadoDeJuego con retroalimentación sobre la acción realizada
+
+### Asistencia durante el juego
+
+Entre las acciones a realizar en el juego se encuentra la de PedirHint. Esta acción le dice al usuario dado el EstadoDeJuego actual cómo debe jugar para poder ganar el juego. Para extraer esta información se usó el modelo planteado en GEKKO y usando su solución se le da respuesta al usuario.

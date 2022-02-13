@@ -18,9 +18,17 @@
 # El nivel de la muralla siempre tiene que estar positivo
 # Los enemigos atacan la muralla una cantidad predefinida
 
+from typing import List
 from gekko import GEKKO
 import numpy as np
-from castle import Recurso, Tarea
+from castle import Recurso
+
+
+class Tarea:
+    def __init__(self, nombre: str, recursos: List[Recurso]) -> None:
+        self.nombre = nombre
+        self.recursos = recursos
+
 
 modelo = GEKKO(remote=False)
 modelo.options.SOLVER = 1  # APOPT is an MINLP solver

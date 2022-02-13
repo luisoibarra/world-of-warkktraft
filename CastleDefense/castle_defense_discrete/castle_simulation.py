@@ -127,7 +127,10 @@ class PedirHint(Accion):
         return PedirHint()
 
 class EstadoDeJuego:
-
+    """
+    Representa el estado actual de la simualción del juego.
+    Los valores de esta clase se deben tratar como solo lectura.
+    """
     # Campos que se copian del estado
     __DATA_FIELDS = [
         'recursos',
@@ -550,6 +553,9 @@ def devolver_accion(estado: EstadoDeJuego) -> Accion:
 
 
 class ModeloSimulacion(Modelo):
+    """
+    Simula el juego en dependencia de las formas de `pedir_accion` del usuario y dar `retroalimentación` a este
+    """
     
     def __init__(self, juego: 'JuegoSimulacion', pedir_accion: Callable[[EstadoDeJuego], Accion], retroalimentacion_accion: Callable[[str], None]) -> None:
         super().__init__()

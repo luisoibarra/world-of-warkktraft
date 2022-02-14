@@ -11,7 +11,7 @@ Se presenta un juego sencillo en el cual se necesita defender un castillo de ole
 3. En la terminal correr `python3 main.py` o `python main.py`.
 
 
-## Enunciado del Juego
+## Enunciado de Castle Defense
 
 Estás en un castillo que será asediado por una fuerza que te supera, por suerte tu salvación se encuentra a unos N días de espera. Tu misión es resistir hasta que lleguen los refuerzos. En los almacenes del castillo se tienes unos recursos X los cuales te ayudarán. 
 
@@ -20,6 +20,14 @@ Entre tus filas cuentas con una fuerza de A artesanos para confeccionar las arma
 El enemigo tardará unos D días en llegar y luego atacará en oleadas cada vez más fuertes, aprovecha el tiempo que tienes para irte preparando para la dura batalla, recolecta recursos, construye armas que puedan contener las arremetidas furiosas de los malvados que quieren tomar las vidas de tus súbditos. Si todo sale bien seguro saldrás victorioso.
 
 Suerte, esperemos que no queden solo ruinas para los aliados.
+
+## Aplicación
+
+La aplicación consiste en una colección de niveles del juego anterior. Estos niveles se organizan por dificultad. La aplicación provee de dos modos. Una muestra una manera de jugar óptima de manera tal que se pueda completar el nivel seleccionado, mientras que otra el usuario tiene que interactuar con la aplicación hasta que pierda o gane el nivel. 
+
+### Creación de niveles
+
+La aplicación permite la adición de nuevos niveles de manera amigable al usuario común. Para eso es necesario crear las dependencias necesarias de **Nivel**, que son principalmente la **EstrategiaEnemiga** y el **Castillo**. Una vez se tengan estas la instancia de **Nivel** creada se puede añadir a cualquiera de las listas en `castle_defense_discrete/levels.py`en correspondencia al criterio de dificultad. Para ejemplos observar este mismo archivo.
 
 ## API
 
@@ -137,7 +145,3 @@ Para que el usuario pueda jugar se implementó un modelo del juego que interact�
 ### Asistencia durante el juego
 
 Entre las acciones a realizar en el juego se encuentra la de **PedirHint**. Esta acción le dice al usuario dado el **EstadoDeJuego** actual cómo debe jugar para poder ganar el juego. Para extraer esta información se usó el modelo planteado en **GEKKO** y usando su solución se le da respuesta al usuario.
-
-## Creación de niveles
-
-La aplicación permite la adición de nuevos niveles de manera amigable al programador. Para eso es necesario crear las dependencias necesarias de **Nivel**, que son principalmente la **EstrategiaEnemiga** y el **Castillo**. Una vez se tengan estas la instancia de **Nivel** creada se puede añadir a cualquiera de las listas en `castle_defense_discrete/levels.py`en correspondencia al criterio de dificultad. Para ejemplos observar este mismo archivo.

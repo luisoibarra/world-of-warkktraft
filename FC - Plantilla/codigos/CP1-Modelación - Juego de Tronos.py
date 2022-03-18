@@ -1044,7 +1044,7 @@ places.sort()
 
 # Argumentos con las aristas del problema
 
-argumentos_problema_x_equipo_1 = [
+argumentos_problema_5_equipo_1 = [
     ("The Twins", "Winterfell", 0),
     ("Storm's End", "King's Landing", 0),
     ("Storm's End", "The Dreadfort", 0),
@@ -1061,7 +1061,7 @@ argumentos_problema_x_equipo_1 = [
     ("The Dreadfort", "Winterfell", 0),
 ]
 
-argumentos_problema_x_equipo_2 = [
+argumentos_problema_5_equipo_2 = [
     ("The Twins", "Winterfell", 0),
     ("Storm's End", "King's Landing", 0),
     ("Storm's End", "The Dreadfort", 0),
@@ -1081,29 +1081,29 @@ argumentos_problema_x_equipo_2 = [
 # Completar los huecos
 for x in places:
     for y in places:
-        if not any(_ for (source,dest,_) in argumentos_problema_x_equipo_1 if x==source and y==dest):
-            argumentos_problema_x_equipo_1.append((x,y,0))
-        if not any(_ for (source,dest,_) in argumentos_problema_x_equipo_2 if x==source and y==dest):
-            argumentos_problema_x_equipo_2.append((x,y,0))
+        if not any(_ for (source,dest,_) in argumentos_problema_5_equipo_1 if x==source and y==dest):
+            argumentos_problema_5_equipo_1.append((x,y,0))
+        if not any(_ for (source,dest,_) in argumentos_problema_5_equipo_2 if x==source and y==dest):
+            argumentos_problema_5_equipo_2.append((x,y,0))
 
-argumentos_problema_x_equipo_1_ = []
-argumentos_problema_x_equipo_2_ = []
+argumentos_problema_5_equipo_1_ = []
+argumentos_problema_5_equipo_2_ = []
 
 # Ordenando los argumentos
 for x in places:
     for y in places:
-        valor1 = next(valor for (source,dest,valor) in argumentos_problema_x_equipo_1 if x==source and y==dest)
-        valor2 = next(valor for (source,dest,valor) in argumentos_problema_x_equipo_2 if x==source and y==dest)
-        argumentos_problema_x_equipo_1_.append(valor1)
-        argumentos_problema_x_equipo_2_.append(valor2)
+        valor1 = next(valor for (source,dest,valor) in argumentos_problema_5_equipo_1 if x==source and y==dest)
+        valor2 = next(valor for (source,dest,valor) in argumentos_problema_5_equipo_2 if x==source and y==dest)
+        argumentos_problema_5_equipo_1_.append(valor1)
+        argumentos_problema_5_equipo_2_.append(valor2)
 
-argumentos_problema_x_equipo_1 = argumentos_problema_x_equipo_1_,
-argumentos_problema_x_equipo_2 = argumentos_problema_x_equipo_2_,
+argumentos_problema_5_equipo_1 = argumentos_problema_5_equipo_1_,
+argumentos_problema_5_equipo_2 = argumentos_problema_5_equipo_2_,
 
-problema_x = ProblemManager(tully_house_solve, tully_house_input)
-class_manager.register_result("Ejercicio 5 - Casa Tully", problema_x, 
-                                argumentos_problema_x_equipo_1, 
-                                argumentos_problema_x_equipo_2, 
+problema_5 = ProblemManager(tully_house_solve, tully_house_input)
+class_manager.register_result("Ejercicio 5 - Casa Tully", problema_5, 
+                                argumentos_problema_5_equipo_1, 
+                                argumentos_problema_5_equipo_2, 
                                 maxim=True,
                                 unfold=True)
 
@@ -1194,7 +1194,7 @@ def stark_house_input():
 
 # Poner a mano los argumentos dichos por los estudiantes o se pueden poner mediente input seteando los argumentos a None
 
-argumentos_problema_5_equipo_1 = [
+argumentos_problema_6_equipo_1 = [
     0, # Hombres enviados oleada 1
     0, # Hombres enviados oleada 2
     0, # Hombres enviados oleada 3
@@ -1209,7 +1209,7 @@ argumentos_problema_5_equipo_1 = [
     0, # Hombres enviados oleada 12
 ], False
 
-argumentos_problema_5_equipo_2 = [
+argumentos_problema_6_equipo_2 = [
     0, # Hombres enviados oleada 1
     0, # Hombres enviados oleada 2
     0, # Hombres enviados oleada 3
@@ -1226,17 +1226,17 @@ argumentos_problema_5_equipo_2 = [
 
 print("Inciso a)")
 print()
-problema_5 = ProblemManager(stark_house_solve, stark_house_input)
-class_manager.register_result("Ejercicio 6 a) - Casa Stark", problema_5, 
-                                argumentos_problema_5_equipo_1, 
-                                argumentos_problema_5_equipo_2,
+problema_6 = ProblemManager(stark_house_solve, stark_house_input)
+class_manager.register_result("Ejercicio 6 a) - Casa Stark", problema_6, 
+                                argumentos_problema_6_equipo_1, 
+                                argumentos_problema_6_equipo_2,
                                 unfold=True)
 
 
 # In[ ]:
 
 
-argumentos_problema_5_2_equipo_1 = [
+argumentos_problema_6_2_equipo_1 = [
     0, # Hombres enviados oleada 1
     0, # Hombres enviados oleada 2
     0, # Hombres enviados oleada 3
@@ -1251,7 +1251,7 @@ argumentos_problema_5_2_equipo_1 = [
     0, # Hombres enviados oleada 12
 ], True
 
-argumentos_problema_5_2_equipo_2 = [
+argumentos_problema_6_2_equipo_2 = [
     0, # Hombres enviados oleada 1
     0, # Hombres enviados oleada 2
     0, # Hombres enviados oleada 3
@@ -1268,9 +1268,9 @@ argumentos_problema_5_2_equipo_2 = [
 
 print("Inciso b)")
 print()
-class_manager.register_result("Ejercicio 6 b) - Casa Stark", problema_5, 
-                                argumentos_problema_5_2_equipo_1, 
-                                argumentos_problema_5_2_equipo_2,
+class_manager.register_result("Ejercicio 6 b) - Casa Stark", problema_6, 
+                                argumentos_problema_6_2_equipo_1, 
+                                argumentos_problema_6_2_equipo_2,
                                 unfold=True)
 
 

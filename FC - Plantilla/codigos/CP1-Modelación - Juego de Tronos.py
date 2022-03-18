@@ -1078,12 +1078,30 @@ argumentos_problema_5_equipo_2 = [
     ("The Dreadfort", "Winterfell", 0),
 ]
 
+# Asignando los valores al nodo inicial por defecto
+iniciales_equipo_1 = {
+    "King's Landing": sum(val for (source, dest, val) in argumentos_problema_5_equipo_1 if source == "King's Landing"), 
+    "Storm's End": sum(val for (source, dest, val) in argumentos_problema_5_equipo_1 if source == "Storm's End"), 
+    "Casterly Rock": sum(val for (source, dest, val) in argumentos_problema_5_equipo_1 if source == "Casterly Rock")
+}
+
+iniciales_equipo_2 = {
+    "King's Landing": sum(val for (source, dest, val) in argumentos_problema_5_equipo_2 if source == "King's Landing"), 
+    "Storm's End": sum(val for (source, dest, val) in argumentos_problema_5_equipo_2 if source == "Storm's End"), 
+    "Casterly Rock": sum(val for (source, dest, val) in argumentos_problema_5_equipo_2 if source == "Casterly Rock")
+}
+
 # Completar los huecos
 for x in places:
     for y in places:
-        if not any(_ for (source,dest,_) in argumentos_problema_5_equipo_1 if x==source and y==dest):
+        if x == "Nodo Inicial" and y in iniciales_equipo_1:
+            argumentos_problema_5_equipo_1.append((x,y,iniciales_equipo_1[y]))
+        elif not any(_ for (source,dest,_) in argumentos_problema_5_equipo_1 if x==source and y==dest):
             argumentos_problema_5_equipo_1.append((x,y,0))
-        if not any(_ for (source,dest,_) in argumentos_problema_5_equipo_2 if x==source and y==dest):
+            
+        if x == "Nodo Inicial" and y in iniciales_equipo_2:
+            argumentos_problema_5_equipo_2.append((x,y,iniciales_equipo_2[y]))
+        elif not any(_ for (source,dest,_) in argumentos_problema_5_equipo_2 if x==source and y==dest):
             argumentos_problema_5_equipo_2.append((x,y,0))
 
 argumentos_problema_5_equipo_1_ = []

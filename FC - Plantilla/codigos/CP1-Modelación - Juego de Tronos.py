@@ -15,7 +15,7 @@
 # - Uva: 15
 # - Máxima cantidad de alcohol: 1.2
 
-# In[1]:
+# In[ ]:
 
 
 import numpy as np
@@ -49,8 +49,10 @@ print(lin.linprog(c, Ab, b)) # El resultado se multiplica por -1.
 
 
 # ## Infratructura
+# 
+# La comparación se basa en la premisa de que los valores óptimos de las variables y el óptimo de las funciones de los problemas están restringidos en los positivos. 
 
-# In[2]:
+# In[ ]:
 
 
 # Install a conda package in the current Jupyter kernel
@@ -166,14 +168,13 @@ class ProblemManager:
             print("Diferencia:", diff, "Sugerencia:", suggestion)
 
     def compare(self, user_args=None, unfold=False):
-        try:
-            if unfold:
-                opt, vector_variables = self.solve(None, *user_args[1:])
-            else:
-                opt, vector_variables = self.solve()
-        except:
-            print("El problema no es factible.")
-            return None, None, None, None
+        if unfold:
+            opt, vector_variables = self.solve(None, *user_args[1:])
+        else:
+            opt, vector_variables = self.solve()
+
+        if opt is None:
+            raise Exception("El problema original no tiene solución")
 
         vector_variables = [x for x in unfold_list(vector_variables)]
 
@@ -184,42 +185,45 @@ class ProblemManager:
         if user_args is None:
             user_args = self.args_fetcher()
 
-        user_args = [x for x in unfold_list(user_args)]
+        user_args = [x for x in unfold_list(user_args if not unfold else user_args[0])]
 
         self.compare_assigantions(vector_variables, user_args)
 
-        try:        
-            user_opt, _ = self.solve(*user_args)
-            user_args = [x for x in unfold_list(user_args)]
-            
-            optimal_proportion = user_opt/opt
-
-            print('El valor alcanzado con su asiganción es de', user_opt)
-            print('El valor óptimo del problema es', opt)
-            print(f"Su solución es {optimal_proportion*100:0.2f}% óptima, por lo que")
-
-            if optimal_proportion < 0 - 0.00000001:
-                raise Exception("La naturaleza de los problemas dados no admite óptimos negativos")
-
-            if optimal_proportion < 0.25:
-                print('Su solución es bastante mala con respecto al valor óptimo, es menos que la cuarta parte.')
-            elif optimal_proportion < 0.5:
-                print('Su solución es mala con respecto al valor óptimo, es menos de la mitad.')
-            elif optimal_proportion < 0.75:
-                print('Su solución es moderadamente mala con respecto al valor óptimo, es menos de 3/4 del óptimo')
-            elif optimal_proportion < 0.90:
-                print('Su solución es aceptable, aunque se puede mejorar.')
-            elif optimal_proportion < 0.95:
-                print('Su solución es buena, pero le falta un poco aún')
-            elif optimal_proportion < 0.99:
-                print('Su solución es casi óptima')
-            else:
-                print('Su solución es óptima')
-            
-            return user_opt, user_args, opt, vector_variables 
-        except Exception as ex:
+        user_opt, _ = self.solve(user_args)
+        
+        if user_opt is None:
             print('Su solución no es factible. El valor óptimo es', opt)
             return None, None, None, None
+
+        
+        user_args = [x for x in unfold_list(user_args)]
+        
+        optimal_proportion = user_opt/opt
+
+        print('El valor alcanzado con su asiganción es de', user_opt)
+        print('El valor óptimo del problema es', opt)
+        print(f"Su solución es {optimal_proportion*100:0.2f}% óptima, por lo que")
+
+        if optimal_proportion < 0 - 0.00000001:
+            raise Exception("La naturaleza de los problemas dados no admite óptimos negativos")
+
+        if optimal_proportion < 0.25:
+            print('Su solución es bastante mala con respecto al valor óptimo, es menos que la cuarta parte.')
+        elif optimal_proportion < 0.5:
+            print('Su solución es mala con respecto al valor óptimo, es menos de la mitad.')
+        elif optimal_proportion < 0.75:
+            print('Su solución es moderadamente mala con respecto al valor óptimo, es menos de 3/4 del óptimo')
+        elif optimal_proportion < 0.90:
+            print('Su solución es aceptable, aunque se puede mejorar.')
+        elif optimal_proportion < 0.95:
+            print('Su solución es buena, pero le falta un poco aún')
+        elif optimal_proportion < 0.99:
+            print('Su solución es casi óptima')
+        else:
+            print('Su solución es óptima')
+        
+        return user_opt, user_args, opt, vector_variables 
+
 
 class ClassManager:
 
@@ -243,6 +247,7 @@ class ClassManager:
         print("Felicidades equipo", ganador, "por participar y ganar en la lucha contra los caminantes blancos")
 
 class_manager = ClassManager()
+
 
 # # Problemas
 # 
@@ -268,12 +273,18 @@ class_manager = ClassManager()
 # 1. Ayude a darle el mejor uso a estos recursos, diciéndoles a los jefes de la casa la cantidad de espadas, arcos y catapultas que necesitan construir para maximizar el daño que realizan.
 # 2. Se quiere tener modelo que generalice el problema anterior en términos de la cantidad de tipos de materiales y cantidad de tipos de armas. Proponga un modelo que haga esta generalización.
 
-# In[3]:
+# In[ ]:
 
 
 # Ejercicio 1
 
-def mormont_house_solve(swords=None,bows=None,catapults=None):
+def mormont_house_solve(armas=None):
+    
+    if not armas:
+        swords=None; bows=None; catapults=None
+    else:
+        swords, bows, catapults = armas
+    
     #1 Mormont House
     #resourses
     iron = 600000
@@ -308,10 +319,12 @@ def mormont_house_solve(swords=None,bows=None,catapults=None):
         return 15*x + 10*y + 80*z
 
     modelo.Maximize(f(sword,bow,catapult))
-
-    modelo.solve(disp=False)
     
-    return -modelo.options.OBJFCNVAL, [sword, bow, catapult]
+    try:
+        modelo.solve(disp=False)
+        return -modelo.options.OBJFCNVAL, [sword, bow, catapult]
+    except:
+        return None, None
 
 def mormont_house_input():
     print('Según tus habilidades como estratega militar que cantidad de cada arma se debería construir')
@@ -366,7 +379,12 @@ class_manager.register_result("Ejercicio 1 - Casa Mormont", problema_1,
 
 
 # Ejercicio 2
-def greyjoy_house_solve(trigo=None, ganado=None, encurtidos=None, agua=None):
+def greyjoy_house_solve(comida=None):
+    
+    if not comida:
+        trigo=None; ganado=None; encurtidos=None; agua=None
+    else:
+        trigo, ganado, encurtidos, agua = comida
     
     # Datos
     total_ppl = 60000
@@ -421,9 +439,11 @@ def greyjoy_house_solve(trigo=None, ganado=None, encurtidos=None, agua=None):
     # Función objetivo
     modelo.Minimize(f(_trigo, _ganado, _encurtidos, _agua))
 
-    modelo.solve(disp=False)
-
-    return modelo.options.OBJFCNVAL, e_vars
+    try:
+        modelo.solve(disp=False)
+        return modelo.options.OBJFCNVAL, e_vars
+    except:
+        return None, None
 
 def greyjoy_house_input():
     print('Segun tu habilidad como gastronomo, que cantidad de alimentos se deberia producir')
@@ -453,6 +473,7 @@ problema_2 = ProblemManager(greyjoy_house_solve, greyjoy_house_input)
 class_manager.register_result("Ejercicio 2 - Casa Greyjoy", problema_2, 
                                 argumentos_problema_2_equipo_1, 
                                 argumentos_problema_2_equipo_2)
+
 
 # ## 3. Casa Targaryen
 # 
@@ -484,7 +505,13 @@ class_manager.register_result("Ejercicio 2 - Casa Greyjoy", problema_2,
 
 
 # Ejercicio 3
-def targaryen_house_solve(aceite=None,dragon=None,caballo=None):
+def targaryen_house_solve(materiales=None):
+    
+    if not materiales:
+        aceite=None; dragon=None; caballo=None
+    else:
+        aceite, dragon, caballo = materiales
+    
     total = 100
     modelo = GEKKO(remote=False)
     modelo.options.SOLVER = 1  # APOPT is an MINLP solver
@@ -515,9 +542,11 @@ def targaryen_house_solve(aceite=None,dragon=None,caballo=None):
 
     modelo.Minimize(f(oil,dra,horse))
 
-    modelo.solve(disp=False)
-
-    return modelo.options.OBJFCNVAL, [oil, dra, horse]
+    try:
+        modelo.solve(disp=False)
+        return modelo.options.OBJFCNVAL, [oil, dra, horse]
+    except:
+        return None, None
 
 def targaryen_house_input():
     print('Según tus habilidades como alquimista,como se debería hacer la compra de los ingrediente')
@@ -544,6 +573,7 @@ problema_3 = ProblemManager(targaryen_house_solve, targaryen_house_input)
 class_manager.register_result("Ejercicio 3 - Casa Targaryen", problema_3, 
                                 argumentos_problema_3_equipo_1, 
                                 argumentos_problema_3_equipo_2)
+
 
 # ## 4. Casa Baratheon
 # 
@@ -656,10 +686,12 @@ def baratheon_house_solve(recursos_caminos=None, preservar_caminos=False):
                 eq = 0
 
     if test:
+        index = 0
         for i in range(len(_vars)):
             for j in range(len(_vars[i])):
                 for l in range(len(_vars[i][j])):
-                    modelo.Equation(recursos_caminos[i][j][l]==_vars[i][j][l])
+                    modelo.Equation(recursos_caminos[index]==_vars[i][j][l])
+                    index+=1
 
     def f(matrix):
         ret = 0
@@ -673,9 +705,11 @@ def baratheon_house_solve(recursos_caminos=None, preservar_caminos=False):
     # Función objetivo
     modelo.Minimize(f(_vars))
 
-    modelo.solve(disp=False)
-
-    return modelo.options.OBJFCNVAL, _vars
+    try:
+        modelo.solve(disp=False)
+        return modelo.options.OBJFCNVAL, _vars
+    except:
+        return None, None
 
 def baratheon_house_input():
     names = ['armas', 'comida', 'soldados', 'fuego_valiryo']
@@ -776,7 +810,6 @@ class_manager.register_result("Ejercicio 4 a) - Casa Baratheon", problema_4,
 # In[ ]:
 
 
-
 argumentos_problema_4_2_equipo_1 = [
     [ # Transporte de Armas
         [0,0,0],
@@ -832,7 +865,250 @@ class_manager.register_result("Ejercicio 4 b) - Casa Baratheon", problema_4,
                                 unfold=True)
 
 
-# ## 5. Casa Stark
+# ## 5. Casa Tully
+# 
+# La fuerza secundaria está esperando en las fortalezas Storm's End, King's Landing y Casterly Rock. Para hacer el viaje se tienen las siguientes rutas:
+# 
+# 
+# Rutas:
+# 
+# | Origen | Destino | Capacidad |
+# | --- | --- | --- |
+# | The Twins (Violeta) | Winterfell | 0 |
+# | Storm's End (Negro) | King's Landing | 0 |
+# | Storm's End | The Dreadfort | 0 |
+# | Iron Islands (Rojo) | The Twins | 0 |
+# | King's Landing (Salmón) | The Dreadfort | 0 |
+# | King's Landing | The Eyrie | 0 |
+# | King's Landing | Riverrun | 0 |
+# | Riverrun (Celeste) | The Twins | 0 |
+# | Riverrun | The Eyrie | 0 |
+# | Casterly Rock (Verde) | Iron Islands | 0 |
+# | Casterly Rock | Riverrun | 0 |
+# | The Eyrie (Morado) | The Twins | 0 |
+# | The Eyrie | Riverrun | 0 |
+# | The Dreadfort (Azul) | Winterfell | 0 |
+# 
+# ![images/Poniente.jpg](images/Poniente.jpg)
+# 
+# Soldados iniciales:
+# 
+# | Lugar de partida | Cantidad de soldados |
+# | --- | --- |
+# | Storm's End | 0 |
+# | King's Landing | 0 |
+# | Casterly Rock | 0 |
+# 
+# 1. Se necesitan trasladar la mayor cantidad de soldados a Winterfell de manera tal de que las rutas no pasen más de cierta cantidad de soldados. ¿De qué forma es posible hacer esto?
+
+# In[ ]:
+
+
+
+# Ejercicio 5
+def tully_house_solve(assigned_soldiers=None):
+    if assigned_soldiers is None:
+        assigned_soldiers = []
+
+    modelo = GEKKO(remote=False)
+    modelo.options.SOLVER = 1  # APOPT is an MINLP solver
+    modelo.options.LINEAR = 1 # Is a MILP
+    
+    # Constantes
+
+    # Grafo no dirigido de lugares
+    paths = {
+        "The Twins": {
+            "Winterfell":40000, 
+        },
+        "Storm's End": {
+            "King's Landing":20000,
+            "The Dreadfort":20000,
+            },
+        "Iron Islands": {
+            "The Twins":10000,
+            },
+        "King's Landing": {
+            "The Dreadfort":20000,
+            "Riverrun":10000,
+            "The Eyrie":10000,
+            },
+        "Riverrun": {
+            "The Twins":20000,
+            "The Eyrie":20000,
+            },
+        "Casterly Rock": {
+            "Iron Islands":10000,
+            "Riverrun":10000,
+            },
+        "The Eyrie": {
+            "The Twins":10000,
+            "Riverrun":10000,
+            },
+        "The Dreadfort": {
+            "Winterfell":20000,
+            },
+        "Winterfell": {},
+    }
+
+    # Soldados iniciales
+    initial_soldiers = {
+        "The Twins": 0, # House Frey
+        "Iron Islands": 0, # House Greyjoy
+        "Storm's End": 30000, # House Baratheon
+        "King's Landing": 30000, # House Targaryen
+        "Riverrun": 0, # House Tully
+        "Casterly Rock": 30000, # House Lannister
+        "The Eyrie": 0, # House Arryn
+        "The Dreadfort": 0, # House Bolton
+        "Winterfell": 0, # House Stark
+    }
+
+    # Este lugar ficticio se conecta con los lugares originales mediante aristas 
+    # Con el peso correspondiente a la cantidad de soldados
+    paths["Nodo Inicial"] = {place:initial_amount for place, initial_amount in initial_soldiers.items()}
+    # Todos los soldados salen de un lugar ficticio creado por el bien del modelo
+    initial_soldiers["Nodo Inicial"] = sum(initial_soldiers.values())
+
+    # Completar las aristas faltantes con 0
+    for key1 in paths:
+        for key2 in paths:
+            if key2 not in paths[key1]:
+                paths[key1][key2] = 0
+
+    places = list(paths.keys())
+    places.sort()
+
+    # Variables
+    soldiers_ij = { 
+        source_place: {
+            dest_place:
+            modelo.Var(lb=0, integer=True, name=f"Soldados que pasan desde {source_place} a {dest_place}") 
+                for dest_place in places
+            } 
+            for source_place in places 
+        }
+
+    # Restricciones
+
+    for source in places:
+        for dest in places:
+            # Los soldados que van de source a dest no puede ser más que el peso de la arista
+            modelo.Equation(soldiers_ij[source][dest] <= paths[source][dest])
+    
+    for place in [x for x in places if x not in ["Nodo Inicial", "Winterfell"]]:
+        # Lo que entra en el nodo es igual a lo que sale
+        modelo.Equation(modelo.sum([soldiers_ij[place][x] for x in places]) == modelo.sum([soldiers_ij[x][place] for x in places]))
+
+    # Restricciones de usuario
+    if assigned_soldiers:
+        index = 0
+        for source in places:
+            for dest in places:
+                modelo.Equation(soldiers_ij[source][dest] == assigned_soldiers[index])
+                index+=1
+
+    # Función objetivo
+    modelo.Maximize(modelo.sum([soldiers_ij[place]["Winterfell"] for place in places]))
+
+    try:
+        modelo.solve(disp=False)
+        return -modelo.options.OBJFCNVAL, [soldiers_ij[x][y] for x in places for y in places]
+    except:
+        return None, None
+
+def tully_house_input():
+    print("Introduce los nombres de salida y destino y la cantidad de soldados a transportar separados por ,:")
+    asigancion = []
+    entrada = True
+    while entrada:
+        entrada = input("Salida, Destino, Cantidad: ")
+        salida, destino, cant = [x.strip() for x in entrada.split(',')]
+        asigancion.append((salida, destino, int(cant)))
+    return asigancion
+
+# Poner a mano los argumentos dichos por los estudiantes o se pueden poner mediente input seteando los argumentos a None
+places = [
+    'Winterfell',
+    'The Twins',
+    'The Eyrie',
+    'The Dreadfort',
+    "Storm's End",
+    'Riverrun',
+    'Nodo Inicial',
+    "King's Landing",
+    'Iron Islands',
+    'Casterly Rock',
+]
+places.sort()
+
+# Argumentos con las aristas del problema
+
+argumentos_problema_x_equipo_1 = [
+    ("The Twins", "Winterfell", 0),
+    ("Storm's End", "King's Landing", 0),
+    ("Storm's End", "The Dreadfort", 0),
+    ("Iron Islands", "The Twins", 0),
+    ("King's Landing", "The Dreadfort", 0),
+    ("King's Landing", "Riverrun", 0),
+    ("King's Landing", "The Eyrie", 0),
+    ("Riverrun", "The Twins", 0),
+    ("Riverrun", "The Eyrie", 0),
+    ("Casterly Rock", "Iron Islands", 0),
+    ("Casterly Rock", "Riverrun", 0),
+    ("The Eyrie", "The Twins", 0),
+    ("The Eyrie", "Riverrun", 0),
+    ("The Dreadfort", "Winterfell", 0),
+]
+
+argumentos_problema_x_equipo_2 = [
+    ("The Twins", "Winterfell", 0),
+    ("Storm's End", "King's Landing", 0),
+    ("Storm's End", "The Dreadfort", 0),
+    ("Iron Islands", "The Twins", 0),
+    ("King's Landing", "The Dreadfort", 0),
+    ("King's Landing", "Riverrun", 0),
+    ("King's Landing", "The Eyrie", 0),
+    ("Riverrun", "The Twins", 0),
+    ("Riverrun", "The Eyrie", 0),
+    ("Casterly Rock", "Iron Islands", 0),
+    ("Casterly Rock", "Riverrun", 0),
+    ("The Eyrie", "The Twins", 0),
+    ("The Eyrie", "Riverrun", 0),
+    ("The Dreadfort", "Winterfell", 0),
+]
+
+# Completar los huecos
+for x in places:
+    for y in places:
+        if not any(_ for (source,dest,_) in argumentos_problema_x_equipo_1 if x==source and y==dest):
+            argumentos_problema_x_equipo_1.append((x,y,0))
+        if not any(_ for (source,dest,_) in argumentos_problema_x_equipo_2 if x==source and y==dest):
+            argumentos_problema_x_equipo_2.append((x,y,0))
+
+argumentos_problema_x_equipo_1_ = []
+argumentos_problema_x_equipo_2_ = []
+
+# Ordenando los argumentos
+for x in places:
+    for y in places:
+        valor1 = next(valor for (source,dest,valor) in argumentos_problema_x_equipo_1 if x==source and y==dest)
+        valor2 = next(valor for (source,dest,valor) in argumentos_problema_x_equipo_2 if x==source and y==dest)
+        argumentos_problema_x_equipo_1_.append(valor1)
+        argumentos_problema_x_equipo_2_.append(valor2)
+
+argumentos_problema_x_equipo_1 = argumentos_problema_x_equipo_1_,
+argumentos_problema_x_equipo_2 = argumentos_problema_x_equipo_2_,
+
+problema_x = ProblemManager(tully_house_solve, tully_house_input)
+class_manager.register_result("Ejercicio 5 - Casa Tully", problema_x, 
+                                argumentos_problema_x_equipo_1, 
+                                argumentos_problema_x_equipo_2, 
+                                maxim=True,
+                                unfold=True)
+
+
+# ## 6. Casa Stark
 # 
 # Ya se encuentran todos los recursos en Winterfell, listos para la batalla, el frío y la oscuridad cubren todo. Los exploradores regresan de su misión informando que los caminantes blancos atacarán en 12 oleadas y calculan el estimado de fuerza de cada una de ellas:
 # 
@@ -847,7 +1123,8 @@ class_manager.register_result("Ejercicio 4 b) - Casa Baratheon", problema_4,
 
 # In[ ]:
 
-# Ejercicio 5
+
+# Ejercicio 6
 def stark_house_solve(waves_values=None, arya=False):
     if waves_values is None:
         waves_values = []
@@ -902,9 +1179,11 @@ def stark_house_solve(waves_values=None, arya=False):
     # Función objetivo
     modelo.Minimize(modelo.sum([0.75 * (positive_z_i[i] - negative_z_i[i]) + 0.25 * z_i(i) for i in range(waves_amount-1)]))
 
-    modelo.solve(disp=False)
-
-    return modelo.options.OBJFCNVAL, men_sent_wave_i
+    try:
+        modelo.solve(disp=False)
+        return modelo.options.OBJFCNVAL, men_sent_wave_i
+    except:
+        return None, None
 
 def stark_house_input():
     print("Introduce la cantidad de guerreros a enviar en cada oleada:")
@@ -948,7 +1227,7 @@ argumentos_problema_5_equipo_2 = [
 print("Inciso a)")
 print()
 problema_5 = ProblemManager(stark_house_solve, stark_house_input)
-class_manager.register_result("Ejercicio 5 a) - Casa Stark", problema_5, 
+class_manager.register_result("Ejercicio 6 a) - Casa Stark", problema_5, 
                                 argumentos_problema_5_equipo_1, 
                                 argumentos_problema_5_equipo_2,
                                 unfold=True)
@@ -989,7 +1268,7 @@ argumentos_problema_5_2_equipo_2 = [
 
 print("Inciso b)")
 print()
-class_manager.register_result("Ejercicio 5 b) - Casa Stark", problema_5, 
+class_manager.register_result("Ejercicio 6 b) - Casa Stark", problema_5, 
                                 argumentos_problema_5_2_equipo_1, 
                                 argumentos_problema_5_2_equipo_2,
                                 unfold=True)
@@ -999,6 +1278,8 @@ class_manager.register_result("Ejercicio 5 b) - Casa Stark", problema_5,
 # 
 # Conteo de puntos y dar resultados
 
-# In[8]:
+# In[ ]:
+
 
 class_manager.print_result()
+

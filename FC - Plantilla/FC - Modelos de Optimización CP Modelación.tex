@@ -685,7 +685,7 @@ $$
 %-----------------------------------------------------------------------------------
 (Este ejercicio tiene una duración de $10$ minutos.)\\
 
-Es hora de reunir todos los recursos y tropas. Para esto se conoce que hacen falta trasladar las armas, comida, soldados y fuego valiryo hacia diferentes puntos intermedios para finalmente llegar a Winterfell. El traslado está condicionado por diferentes situaciones, clima, calidad del camino, tipo de recurso, que hacen que se tenga un desgaste de los recursos en el traslado en dependencia del destino. Este desgaste se observa:
+Es hora de reunir todos los recursos y tropas. Para esto se conoce que hacen falta trasladar las armas, comida, soldados y fuego valiryo desde Bravos, Pentos y Highgarden hacia Storm's End, King's Landing y Casterly Rock desde donde finalmente llegarán a Winterfell. El traslado está condicionado por diferentes situaciones, clima, calidad del camino, tipo de recurso, que hacen que se tenga un desgaste de los recursos en el traslado en dependencia del destino. Este desgaste se observa:
 
 \begin{itemize}
 
@@ -694,10 +694,10 @@ Es hora de reunir todos los recursos y tropas. Para esto se conoce que hacen fal
 \begin{figure}[h!]%
 	\begin{center}
 		\begin{tabular}{|c|c|c|c|} \hline
-		Lugares	& 2.1		& 2.2		& 2.3	\\ \hline
-		1.1		& 5			& 10		&  7	\\ \hline
-		1.2		& 10		& 20		& 10	\\ \hline
-		1.3		& 7			& 10		&  7	\\ \hline
+		Lugares	& Storm's End		& King's Landing		& Casterly Rock	\\ \hline
+		Braavos		& 5			& 10		&  7	\\ \hline
+		Pentos		& 10		& 20		& 10	\\ \hline
+		Highgarden		& 7			& 10		&  7	\\ \hline
 		\end{tabular}
 	\caption{Desgaste traslado de armas}\label{fig:ejer_4_1}
 	\end{center}
@@ -708,10 +708,10 @@ Es hora de reunir todos los recursos y tropas. Para esto se conoce que hacen fal
 \begin{figure}[h!]%
 	\begin{center}
 		\begin{tabular}{|c|c|c|c|} \hline
-		Lugares	& 2.1		& 2.2		& 2.3	\\ \hline
-		1.1		& 25		& 20		& 15	\\ \hline
-		1.2		& 20		& 17		& 10	\\ \hline
-		1.3		& 15		& 10		&  5	\\ \hline
+		Lugares	& Storm's End		& King's Landing		& Casterly Rock	\\ \hline
+		Braavos		& 25		& 20		& 15	\\ \hline
+		Pentos		& 20		& 17		& 10	\\ \hline
+		Highgarden		& 15		& 10		&  5	\\ \hline
 		\end{tabular}
 	\caption{Desgaste traslado de comida}\label{fig:ejer_4_2}
 	\end{center}
@@ -722,10 +722,10 @@ Es hora de reunir todos los recursos y tropas. Para esto se conoce que hacen fal
 \begin{figure}[h!]%
 	\begin{center}
 		\begin{tabular}{|c|c|c|c|} \hline
-		Lugares	& 2.1		& 2.2		& 2.3	\\ \hline
-		1.1		& 10		&  7		&  7	\\ \hline
-		1.2		&  7		& 10		&  9	\\ \hline
-		1.3		&  7		&  9		&  8	\\ \hline
+		Lugares	& Storm's End		& King's Landing		& Casterly Rock	\\ \hline
+		Braavos		& 10		&  7		&  7	\\ \hline
+		Pentos		&  7		& 10		&  9	\\ \hline
+		Highgarden		&  7		&  9		&  8	\\ \hline
 		\end{tabular}
 	\caption{Desgaste traslado de soldados}\label{fig:ejer_4_3}
 	\end{center}
@@ -736,10 +736,10 @@ Es hora de reunir todos los recursos y tropas. Para esto se conoce que hacen fal
 \begin{figure}[h!]%
 	\begin{center}
 		\begin{tabular}{|c|c|c|c|} \hline
-		Lugares	& 2.1		& 2.2		& 2.3	\\ \hline
-		1.1		& 30		& 25		& 25	\\ \hline
-		1.2		& 25		&  5		&  5	\\ \hline
-		1.3		& 25		&  5		&  5	\\ \hline
+		Lugares	& Storm's End		& King's Landing		& Casterly Rock	\\ \hline
+		Braavos		& 30		& 25		& 25	\\ \hline
+		Pentos		& 25		&  5		&  5	\\ \hline
+		Highgarden		& 25		&  5		&  5	\\ \hline
 		\end{tabular}
 	\caption{Desgaste traslado de fuego valiryo}\label{fig:ejer_4_4}
 	\end{center}
@@ -826,6 +826,122 @@ Se necesita también que por cada camino pasen al menos 3500 unidades de cualqui
 $$
 \sum^{4}_{i=1} X_{i, j, l} \geq 35000 \enspace \forall j, l
 $$
+
+
+%-----------------------------------------------------------------------------------
+	\subsection{Casa Tully}\label{subsec:ejer_6}
+%-----------------------------------------------------------------------------------
+(Este ejercicio tiene una duración de $10$ minutos.)\\
+
+La fuerza secundaria está esperando en las fortalezas Storm's End, King's Landing y Casterly Rock. Para hacer el viaje se tienen las rutas mostradas en \hyperref[fig:ejer_6_map]{Figura} \ref{fig:ejer_6_map}
+
+Los soldados apostados en las fortalezas son los siguientes:
+
+\begin{figure}[h!]%
+	\begin{center}
+		\begin{tabular}{|c|c|} \hline
+		Lugar de partida & Cantidad de soldados  \\ \hline
+		Storm's End		 & 30000				 \\ \hline
+		King's Landing 	 & 30000				 \\ \hline
+		Casterly Rock 	 & 30000		   		 \\ \hline
+		\end{tabular}
+	\caption{Soldados iniciales}\label{fig:ejer_6_1}
+	\end{center}
+\end{figure}
+
+Las rutas disponibles con sus respectivas capacidades:
+
+\begin{figure}[h!]%
+	\begin{center}
+		\begin{tabular}{|c|c|c|} \hline
+		Origen 			 & Destino 			& Capacidad  \\ \hline
+		The Twins		 & Winterfell		& 40000 		 \\ \hline
+		Storm's End		 & King's Landing	& 20000 		 \\ \hline
+		Storm's End		 & The Dreadfort	& 20000 		 \\ \hline
+		Iron Islands	 & The Twins		& 10000 		 \\ \hline
+		King's Landing	 & The Dreadfort	& 20000 		 \\ \hline
+		King's Landing	 & The Eryie		& 10000 		 \\ \hline
+		King's Landing	 & Riverrun			& 10000 		 \\ \hline
+		Riverrun		 & The Twins		& 20000 		 \\ \hline
+		Riverrun		 & The Eyrie		& 20000 		 \\ \hline
+		Casterly Rock	 & Iron Islands		& 10000 		 \\ \hline
+		Casterly Rock	 & Riverrun			& 10000 		 \\ \hline
+		The Eyrie		 & The Twins		& 10000 		 \\ \hline
+		The Eyrie		 & Riverrun			& 10000 		 \\ \hline
+		The Dreadfort	 & Winterfell		& 20000 		 \\ \hline
+		\end{tabular}
+	\caption{Rutas}\label{fig:ejer_6_2}
+	\end{center}
+\end{figure}
+
+\renewcommand{\theenumi}{\alph{enumi}} % enumerate con incisos
+% \renewcommand{\theenumi}{\arabic{enumi}} % enumerate con números
+
+\begin{enumerate}
+
+	\item Se necesitan trasladar la mayor cantidad de soldados a Winterfell de manera tal de que las rutas no pasen más de cierta cantidad de soldados. ¿De qué forma es posible hacer esto?
+
+
+\end{enumerate}
+
+%-----------------------------------------------------------------------------------
+		\subsubsection{Sobre el ejercicio}\label{subsubsec:sobre_ejer_6}
+%-----------------------------------------------------------------------------------
+
+Este ejercicio se puede modelar como un problema de flujo en el cual se tienen varias fuentes iniciales y se tiene un solo punto final. El problema clásico presenta una sola fuente inicial, pero esta restricción es fácilmente modelada al agregar un nodo ficticio inicial conectado a los nodos inciales con peso en la arista igual a la cantidad de soldados iniciales apostados en cada fortaleza.
+
+%-----------------------------------------------------------------------------------
+		\subsubsection{Solución}\label{subsubsec:sol_ejer_6}
+%-----------------------------------------------------------------------------------
+
+Se asume que el nodo 0 es el nodo ficticio descrito anteriormente y que el nodo n es el nodo final. Para facilitar el modelado del ejercicio el grafo del ejercicio se asume completo y se asume que todo camino que no esté mencionado tiene capacidad 0.
+
+\textbf{Constantes:}
+
+\begin{itemize}
+	\item $camino_{ij}$: Capacidad del camino desde i a j. Los caminos desde el nodo inicial a las fuentes iniciales tendrán un costo prefijado de $soldados\_iniciales_i$. 
+	\item $soldados\_iniciales_i$: Soldados iniciales en la región i.
+\end{itemize}
+
+
+\textbf{Variables de decisión:}
+
+\begin{itemize}
+	\item $soldados_{ij}$: Cantidad de soldados asignados a transitar de la región i a la j.
+\end{itemize}
+
+\textbf{Restricciones:}\\
+
+La cantidad de soldados a transitar tiene que ser positiva:
+
+$$
+\forall_{ij} soldados_{ij} \ge 0
+$$
+
+La cantidad de soldados transitados del nodo inicial a los nodos en donde según el problema se tienen soldados.
+$$
+\forall_{i} soldados\_iniciales_i \le camino_{0i}
+$$
+
+La cantidad de soldados transitados no puede superar la capacidad del camino
+$$
+\forall_{ij} soldados_{ij} \le camino_{ij}
+$$
+
+Todo soldado que entre en un nodo tiene que salir de este, para conservar el flujo, excepto en el nodo fuente y en el nodo final
+
+$$
+\sum_j soldados_{jk} = \sum_i soldados_{ki} \qquad k \in [1,n-1]
+$$
+
+\textbf{Función objetivo:}
+
+Se quiere maximizar la cantidad de soldados que llegan al nodo objetivo (n)
+
+$$
+\max \sum_i soldados_{in}
+$$
+
 
 %-----------------------------------------------------------------------------------
 	\subsection{Casa Stark}\label{subsec:ejer_5}
@@ -950,135 +1066,6 @@ Pasos para linealización:
 De esta manera se linealiza el problema, ya que se puede demostrar que $x_1 = 0 \iff x_2 \neq 0$ si $x \neq 0$ lo que indica que ambas variables se comportan como la parte positiva y negativa respectivamente.
 
 
-%-----------------------------------------------------------------------------------
-	\subsection{Casa Pendiente}\label{subsec:ejer_3}
-%-----------------------------------------------------------------------------------
-(Este ejercicio tiene una duración de $10$ minutos.)\\
-
-La fuerza secundaria está esperando en las fortalezas Storm's End, King's Landing y Casterly Rock. Para hacer el viaje se tienen las rutas mostradas en (\hyperref[fig:ejer_6_map]{imagen})
-
-\begin{itemize}
-
-	\item Amarillo: Winterfell
-	\item Azul: The Dreadfort
-	\item Morado: The Eyrie
-	\item Violeta: The Twins
-	\item Rojo: Iron Islands
-	\item Celeste: Riverrun
-	\item Verde: Casterly Rock
-	\item Salmón: King's Landing
-	\item Negro: Storm's End
-
-\end{itemize}
-
-Los soldados apostados en las fortalezas son los siguientes:
-
-\begin{figure}[h!]%
-	\begin{center}
-		\begin{tabular}{|c|c|} \hline
-		Lugar de partida & Cantidad de soldados  \\ \hline
-		Storm's End		 & 30000				 \\ \hline
-		King's Landing 	 & 30000				 \\ \hline
-		Casterly Rock 	 & 30000		   		 \\ \hline
-		\end{tabular}
-	\caption{Soldados iniciales}\label{fig:ejer_6_1}
-	\end{center}
-\end{figure}
-
-Las rutas disponibles con sus respectivas capacidades:
-
-\begin{figure}[h!]%
-	\begin{center}
-		\begin{tabular}{|c|c|c|} \hline
-		Origen 			 & Destino 			& Capacidad  \\ \hline
-		The Twins		 & Winterfell		& 40000 		 \\ \hline
-		Storm's End		 & King's Landing	& 20000 		 \\ \hline
-		Storm's End		 & The Dreadfort	& 20000 		 \\ \hline
-		Iron Islands	 & The Twins		& 10000 		 \\ \hline
-		King's Landing	 & The Dreadfort	& 20000 		 \\ \hline
-		King's Landing	 & The Eryie		& 10000 		 \\ \hline
-		King's Landing	 & Riverrun			& 10000 		 \\ \hline
-		Riverrun		 & The Twins		& 20000 		 \\ \hline
-		Riverrun		 & The Eyrie		& 20000 		 \\ \hline
-		Casterly Rock	 & Iron Islands		& 10000 		 \\ \hline
-		Casterly Rock	 & Riverrun			& 10000 		 \\ \hline
-		The Eyrie		 & The Twins		& 10000 		 \\ \hline
-		The Eyrie		 & Riverrun			& 10000 		 \\ \hline
-		The Dreadfort	 & Winterfell		& 20000 		 \\ \hline
-		\end{tabular}
-	\caption{Rutas}\label{fig:ejer_6_2}
-	\end{center}
-\end{figure}
-
-\renewcommand{\theenumi}{\alph{enumi}} % enumerate con incisos
-% \renewcommand{\theenumi}{\arabic{enumi}} % enumerate con números
-
-\begin{enumerate}
-
-	\item Se necesitan trasladar la mayor cantidad de soldados a Winterfell de manera tal de que las rutas no pasen más de cierta cantidad de soldados. ¿De qué forma es posible hacer esto?
-
-
-\end{enumerate}
-
-%-----------------------------------------------------------------------------------
-		\subsubsection{Sobre el ejercicio}\label{subsubsec:sobre_ejer_6}
-%-----------------------------------------------------------------------------------
-
-Este ejercicio se puede modelar como un problema de flujo en el cual se tienen varias fuentes iniciales y se tiene un solo punto final. El problema clásico presenta una sola fuente inicial, pero esta restricción es fácilmente modelada al agregar un nodo ficticio inicial conectado a los nodos inciales con peso en la arista igual a la sumatoria de las aristas salientes.
-
-%-----------------------------------------------------------------------------------
-		\subsubsection{Solución}\label{subsubsec:sol_ejer_6}
-%-----------------------------------------------------------------------------------
-
-Se asume que el nodo 0 es el nodo ficticio descrito anteriormente y que el nodo n es el nodo final.
-
-\textbf{Constantes:}
-
-\begin{itemize}
-	\item $camino_{ij}$: Capacidad del camino desde i a j. Los caminos desde el nodo inicial a las fuentes iniciales tendrán un costo prefijado de $soldados\_iniciales_i$. 
-	\item $soldados\_iniciales_i$: Soldados iniciales en la región i.
-\end{itemize}
-
-
-\textbf{Variables de decisión:}
-
-\begin{itemize}
-	\item $soldados_{ij}$: Cantidad de soldados asignados a transitar de la región i a la j.
-\end{itemize}
-
-\textbf{Restricciones:}\\
-
-La cantidad de soldados a transitar tiene que ser positiva:
-
-$$
-\forall_{ij} soldados_{ij} \ge 0
-$$
-
-La cantidad de soldados transitados del nodo inicial a los nodos en donde según el problema se tienen soldados.
-$$
-\forall_{i} soldados\_iniciales_i \le camino_{0i}
-$$
-
-La cantidad de soldados transitados no puede superar la capacidad del camino
-$$
-\forall_{ij} soldados_{ij} \le camino_{ij}
-$$
-
-Todo soldado que entre en un nodo tiene que salir de este, para conservar el flujo, excepto en el nodo fuente y en el nodo final
-
-$$
-\sum_j soldados_{jk} = \sum_i soldados_{ki} \qquad k \in [1,n-1]
-$$
-
-\textbf{Función objetivo:}
-
-Se quiere maximizar la cantidad de soldados que llegan al nodo objetivo (n)
-
-$$
-\max \sum_i soldados_{in}
-$$
-
-
 %===================================================================================
 % Conclusiones
 %-----------------------------------------------------------------------------------
@@ -1135,6 +1122,20 @@ El ejercicio anterior dará pie a que los estudiantes investiguen cómo linealiz
 	\caption{Grafo de traslado sin costes}\label{fig:ejer_6_map}
 	\end{center}
 \end{figure}
+
+\begin{itemize}
+
+	\item Amarillo: Winterfell
+	\item Azul: The Dreadfort
+	\item Morado: The Eyrie
+	\item Violeta: The Twins
+	\item Rojo: Iron Islands
+	\item Celeste: Riverrun
+	\item Verde: Casterly Rock
+	\item Salmón: King's Landing
+	\item Negro: Storm's End
+
+\end{itemize}
 
 
 %===================================================================================

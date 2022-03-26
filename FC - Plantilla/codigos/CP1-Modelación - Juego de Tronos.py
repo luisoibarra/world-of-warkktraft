@@ -1,11 +1,11 @@
-
-# coding: utf-8
-
+# To add a new cell, type '# %%'
+# To add a new markdown cell, type '# %% [markdown]'
+# %% [markdown]
 # # Clase Práctica
 # 
 # ## Juego de Tronos
 # 
-
+# %% [markdown]
 # ## Problema de ejemplo
 # 
 # Tyrion Lannister se está quedando sin bebidas alcohólicas, entonces haciendo alusión a su célebre frase, “Eso se lo que hago, bebo y sé cosas” quiere hacer su propia bebida. Para esto cuenta con 30 libras de uvas, 40 libras de cebada y con 30 libras de levadura. Él conoce que para crear un litro de cerveza necesita 1 libra de cebada y 0.5 libras de levadura, mientras que para crear vino los requisitos son 2 libras de uva y 1 libra de levadura. Conociendo que la cerveza tiene un nivel de alcohol de 2% y el vino 4%, ¿cuál es la mejor manera de distribuir los recursos para crear la mayor cantidad de alcohol?
@@ -15,9 +15,7 @@
 # - Uva: 15
 # - Máxima cantidad de alcohol: 1.2
 
-# In[ ]:
-
-
+# %%
 import numpy as np
 import scipy.optimize._linprog as lin
 
@@ -47,14 +45,12 @@ b = np.array([
 
 print(lin.linprog(c, Ab, b)) # El resultado se multiplica por -1.
 
-
+# %% [markdown]
 # ## Infratructura
 # 
 # La comparación se basa en la premisa de que los valores óptimos de las variables y el óptimo de las funciones de los problemas están restringidos en los positivos. 
 
-# In[ ]:
-
-
+# %%
 # Install a conda package in the current Jupyter kernel
 import sys
 # !conda install --yes --prefix {sys.prefix} numpy
@@ -77,7 +73,7 @@ def unfold_list(obj):
     except TypeError:
         yield obj
 
-def asignar_puntuacion(opt1, opt2, maxim=False, verbose=True):
+def asignar_puntuacion(opt1, opt2, func_eval1, func_eval2, opt, maxim=False, verbose=True):
     punto_probl_eq1 = 0
     punto_probl_eq2 = 0
 
@@ -93,7 +89,19 @@ def asignar_puntuacion(opt1, opt2, maxim=False, verbose=True):
         punto_probl_eq1 += 1
     elif opt1 is None and opt2 is None:
         print(f"Ambos equipos dieron soluciones no factibles")
-        print(f"Los equipos no ganan puntos :(")
+        dif1 = abs(func_eval1 - opt)
+        dif2 = abs(func_eval2 - opt)
+        print("La diferencia entre el óptimo y la evaluación del equipo 1 fue", dif1)
+        print("La diferencia entre el óptimo y la evaluación del equipo 2 fue", dif2)
+        if dif1 == dif2:
+            print(f"Los equipos no ganan puntos :(")
+        elif dif1 < dif2:
+            print("El equipo 1 se acerca más al óptimo, gana 0.5 puntos!")
+            punto_probl_eq1 += 0.5
+        else:
+            print("El equipo 2 se acerca más al óptimo, gana 0.5 puntos!")
+            punto_probl_eq2 += 0.5
+
     elif opt1 == opt2:
         print(f"Ambos equipos dieron soluciones factibles e iguales: {opt1}")
         print(f"Los equipos 1 y 2 ganan 1 punto cada uno!!")
@@ -123,16 +131,16 @@ def asignar_puntuacion(opt1, opt2, maxim=False, verbose=True):
 def comparar_problemas(problema, arg_eq1, arg_eq2, maxim=False, unfold=False):
     print("Equipo 1:")
     print()
-    probl_eq1_opt, _, opt_probl, vector_opt_probl = problema.compare(arg_eq1, unfold=unfold)
+    probl_eq1_opt, _, opt_probl, vector_opt_probl, user_eval1 = problema.compare(arg_eq1, unfold=unfold)
     print()
 
     print("Equipo 2:")
     print()
-    probl_eq2_opt, _, _, _ = problema.compare(arg_eq2, unfold=unfold)
+    probl_eq2_opt, _, _, _, user_eval2 = problema.compare(arg_eq2, unfold=unfold)
     print()
 
     #Puntuacion de los equipos en el ejercicio 1
-    punto_probl_eq1, punto_probl_eq2 = asignar_puntuacion(probl_eq1_opt, probl_eq2_opt, maxim=maxim)
+    punto_probl_eq1, punto_probl_eq2 = asignar_puntuacion(probl_eq1_opt, probl_eq2_opt, user_eval1, user_eval2, opt_probl, maxim=maxim)
     
     return probl_eq1_opt, probl_eq2_opt, opt_probl, vector_opt_probl, punto_probl_eq1, punto_probl_eq2
 
@@ -148,6 +156,7 @@ class ProblemManager:
     def compare_assigantions(self, opt_assignations, user_assignations):
         opt_assignations = {x.name:x.value.value[0] for x in opt_assignations}
         user_assignations = {x:y for x,y in zip(opt_assignations,user_assignations)}
+        abs_diff = 0
 
         print("Comparación del vector solución dado con el vector solución óptimo")
         for var_name in opt_assignations:
@@ -161,17 +170,20 @@ class ProblemManager:
                 suggestion = f"Aumentar el valor de {var_name}"
             else:
                 suggestion = f"Disminuir el valor de {var_name}"
-
+            abs_diff += abs(diff)
 
             print(f"{var_name}:")
             print("Óptimo:", opt_value, "Dado:", user_value)
             print("Diferencia:", diff, "Sugerencia:", suggestion)
+        print()
+        print("Diferencia absoluta entre las asiganciones y el vector óptimo:", abs_diff)
+        print()
 
     def compare(self, user_args=None, unfold=False):
         if unfold:
-            opt, vector_variables = self.solve(None, *user_args[1:])
+            opt, vector_variables, _ = self.solve(None, *user_args[1:])
         else:
-            opt, vector_variables = self.solve()
+            opt, vector_variables, _ = self.solve()
 
         if opt is None:
             raise Exception("El problema original no tiene solución")
@@ -189,40 +201,39 @@ class ProblemManager:
 
         self.compare_assigantions(vector_variables, user_args)
 
-        user_opt, _ = self.solve(user_args)
+        user_opt, _, user_eval = self.solve(user_args)
+        
+        optimal_proportion = user_eval/opt
+
+        print('El valor alcanzado con su asiganción es de', user_eval)
+        print('El valor óptimo del problema es', opt)
         
         if user_opt is None:
-            print('Su solución no es factible. El valor óptimo es', opt)
-            return None, None, None, None
+            print('Su solución no es factible!!!!')
+        else:
+            print(f"Su solución es {optimal_proportion*100:0.2f}% óptima, por lo que")
 
-        
+            if optimal_proportion < 0 - 0.00000001:
+                raise Exception("La naturaleza de los problemas dados no admite óptimos negativos")
+
+            if optimal_proportion < 0.25:
+                print('Su solución es bastante mala con respecto al valor óptimo, es menos que la cuarta parte.')
+            elif optimal_proportion < 0.5:
+                print('Su solución es mala con respecto al valor óptimo, es menos de la mitad.')
+            elif optimal_proportion < 0.75:
+                print('Su solución es moderadamente mala con respecto al valor óptimo, es menos de 3/4 del óptimo')
+            elif optimal_proportion < 0.90:
+                print('Su solución es aceptable, aunque se puede mejorar.')
+            elif optimal_proportion < 0.95:
+                print('Su solución es buena, pero le falta un poco aún')
+            elif optimal_proportion < 0.99:
+                print('Su solución es casi óptima')
+            elif optimal_proportion <= 1 + .0000001:
+                print('Su solución es óptima')
+
         user_args = [x for x in unfold_list(user_args)]
         
-        optimal_proportion = user_opt/opt
-
-        print('El valor alcanzado con su asiganción es de', user_opt)
-        print('El valor óptimo del problema es', opt)
-        print(f"Su solución es {optimal_proportion*100:0.2f}% óptima, por lo que")
-
-        if optimal_proportion < 0 - 0.00000001:
-            raise Exception("La naturaleza de los problemas dados no admite óptimos negativos")
-
-        if optimal_proportion < 0.25:
-            print('Su solución es bastante mala con respecto al valor óptimo, es menos que la cuarta parte.')
-        elif optimal_proportion < 0.5:
-            print('Su solución es mala con respecto al valor óptimo, es menos de la mitad.')
-        elif optimal_proportion < 0.75:
-            print('Su solución es moderadamente mala con respecto al valor óptimo, es menos de 3/4 del óptimo')
-        elif optimal_proportion < 0.90:
-            print('Su solución es aceptable, aunque se puede mejorar.')
-        elif optimal_proportion < 0.95:
-            print('Su solución es buena, pero le falta un poco aún')
-        elif optimal_proportion < 0.99:
-            print('Su solución es casi óptima')
-        else:
-            print('Su solución es óptima')
-        
-        return user_opt, user_args, opt, vector_variables 
+        return user_opt, user_args, opt, vector_variables, user_eval
 
 
 class ClassManager:
@@ -248,12 +259,12 @@ class ClassManager:
 
 class_manager = ClassManager()
 
-
+# %% [markdown]
 # # Problemas
 # 
 # Luego de dar solución al modelo del problema, rellenar las secciones de los argumentos con los valores dados por los estudiantes a las variables de decisión. Al final se dará a conocer el resultado final dada la cantidad de puntos.
 # 
-
+# %% [markdown]
 # ## 1. Casa Mormont
 # 
 # En la preparación de la batalla se necesitan armas para que los guerreros puedan defenderse del ejército de caminantes blancos. Para esto se tienen escasos recursos, así que hay que usarlos sabiamente. Entre las reservas y el trabajo se logró reunir:
@@ -273,9 +284,7 @@ class_manager = ClassManager()
 # 1. Ayude a darle el mejor uso a estos recursos, diciéndoles a los jefes de la casa la cantidad de espadas, arcos y catapultas que necesitan construir para maximizar el daño que realizan.
 # 2. Se quiere tener modelo que generalice el problema anterior en términos de la cantidad de tipos de materiales y cantidad de tipos de armas. Proponga un modelo que haga esta generalización.
 
-# In[ ]:
-
-
+# %%
 # Ejercicio 1
 
 def mormont_house_solve(armas=None):
@@ -322,9 +331,9 @@ def mormont_house_solve(armas=None):
     
     try:
         modelo.solve(disp=False)
-        return -modelo.options.OBJFCNVAL, [sword, bow, catapult]
+        return -modelo.options.OBJFCNVAL, [sword, bow, catapult], -modelo.options.OBJFCNVAL
     except:
-        return None, None
+        return None, None, f(swords, bows, catapults)
 
 def mormont_house_input():
     print('Según tus habilidades como estratega militar que cantidad de cada arma se debería construir')
@@ -353,7 +362,7 @@ class_manager.register_result("Ejercicio 1 - Casa Mormont", problema_1,
                                 argumentos_problema_1_equipo_2, 
                                 maxim=True)
 
-
+# %% [markdown]
 # ## 2. Casa Greyjoy
 # 
 # Un importante recurso para la contienda es la comida. Los soldados y la mano de obra son muchos y cada uno necesita ser alimentado para poder trabajar y luchar contra los temibles caminantes blancos. Esta responsabilidad cae sobre Casa Greyjoy. Los cálculos estiman que para hacer una comida para una persona se necesitan:
@@ -375,9 +384,7 @@ class_manager.register_result("Ejercicio 1 - Casa Mormont", problema_1,
 # 1. Sabiendo que se espera un ejército de alrededor 60 000 personas, proponga a los jefes de la casa una manera de cumplir con los requerimientos con el menor costo posible.
 # 2. Se quiere tener modelo que generalice el problema anterior en términos de la cantidad de tipos de nutrientes y cantidad de tipos de recursos. Proponga un modelo que haga esta generalización.
 
-# In[ ]:
-
-
+# %%
 # Ejercicio 2
 def greyjoy_house_solve(comida=None):
     
@@ -441,9 +448,9 @@ def greyjoy_house_solve(comida=None):
 
     try:
         modelo.solve(disp=False)
-        return modelo.options.OBJFCNVAL, e_vars
+        return modelo.options.OBJFCNVAL, e_vars, modelo.options.OBJFCNVAL
     except:
-        return None, None
+        return None, None, f(trigo, ganado, encurtidos, agua)
 
 def greyjoy_house_input():
     print('Segun tu habilidad como gastronomo, que cantidad de alimentos se deberia producir')
@@ -474,7 +481,7 @@ class_manager.register_result("Ejercicio 2 - Casa Greyjoy", problema_2,
                                 argumentos_problema_2_equipo_1, 
                                 argumentos_problema_2_equipo_2)
 
-
+# %% [markdown]
 # ## 3. Casa Targaryen
 # 
 # El fuego valiryo posee un gran poder ofensivo, este fuego verde arde incluso en el agua y es incapaz de extinguirlo una vez se prende, solo terminando de arder cuando se consume completamente. Las armas imbuidas en este elemento presentan un poder ofensivo superior y además pueden ser usado como bombas incendiarias, así que la producción de este es indispensable. Para fabricar el fuego valiryo se necesita mezclar ciertos ingredientes cuyos nombres no fueron revelados, pero, se conoce la proporción de estos en diferentes recursos naturales:
@@ -501,59 +508,107 @@ class_manager.register_result("Ejercicio 2 - Casa Greyjoy", problema_2,
 # 
 # 1. Ayude a los alquimistas a crear 100 unidades de fuego valiryo con el menor costo posible para enfrentar al enemigo.
 
-# In[ ]:
-
-
+# %%
 # Ejercicio 3
 def targaryen_house_solve(materiales=None):
     
     if not materiales:
-        aceite=None; dragon=None; caballo=None
+        aceite=None; dragon=None; caballo=None; ingrediente1=None; ingrediente2=None; ingrediente3=None
     else:
-        aceite, dragon, caballo = materiales
+        aceite, dragon, caballo, ingrediente1, ingrediente2, ingrediente3 = materiales
     
-    total = 100
     modelo = GEKKO(remote=False)
     modelo.options.SOLVER = 1  # APOPT is an MINLP solver
     modelo.options.LINEAR = 1 # Is a MILP
 
     test = True if  aceite is not None and dragon is not None and caballo is not None else False
 
+    #datos
+    total = 100
+    costo_remanente = 5
+
+    matriz_mezcla = np.array([
+        [.40,.10,.30], # Aceite ballena
+        [.10,.05,.50], # Polvo de Dragón
+        [.15,.35,.05], # Pelo de caballo
+        [1,0,0], # Ingrediente 1
+        [0,1,0], # Ingrediente 2
+        [0,0,1], # Ingrediente 3
+    ])
+
+    remanente = np.array([1 - sum(x) for x in matriz_mezcla])
+
+    costos = np.array([
+        40, # Aceite ballena
+        70, # Polvo de Dragón
+        30, # Pelo de caballo
+        0, # Ingrediente 1
+        0, # Ingrediente 2
+        0, # Ingrediente 3
+    ])
+
+    topes_de_ingredientes_puros = np.array([
+        15, # Ingrediente 1
+        30, # Ingrediente 2
+        10, # Ingrediente 3
+    ])
+
+    porciento_fuego_val = np.array([
+        0.3, # Ingrediente 1
+        0.2, # Ingrediente 2
+        0.5, # Ingrediente 3
+    ])
+
     #variables
     oil = modelo.Var (lb = 0 ,name='aceite' )
     dra = modelo.Var (lb = 0 ,name='dragon')
     horse = modelo.Var (lb = 0,name='caballo')
-    ing1 = modelo.Var (lb = 0 ,name='1')#ing1 30%
-    ing2 = modelo.Var (lb = 0 ,name='2')#ing2 20%
-    ing3 = modelo.Var (lb = 0 ,name='3')#50%
+    ing1 = modelo.Var (lb = 0 ,name='ingrediente 1')#ing1 30%
+    ing2 = modelo.Var (lb = 0 ,name='ingrediente 2')#ing2 20%
+    ing3 = modelo.Var (lb = 0 ,name='ingrediente 3')#ing3 50%
+    variables = np.array([oil, dra, horse, ing1, ing2, ing3])
+
     #restricciones 
-    modelo.Equation(0.4*oil + 0.1*dra + 0.15*horse +ing1 ==0.3*total)
-    modelo.Equation(0.1*oil + 0.05*dra + 0.35*horse + ing2 ==0.2*total)
-    modelo.Equation(0.3*oil + 0.5*dra + 0.05*horse + ing3 ==0.5*total)
-    modelo.Equation(oil*0.8 + dra*0.65 + horse*0.55 + ing1 + ing2+ ing3==total)
+
+    # Restricciones de mezcla
+    transp = matriz_mezcla.transpose()
+    for i in range(len(porciento_fuego_val)):
+        modelo.Equation(modelo.sum(transp[i] * variables) == porciento_fuego_val[i] * total)
+
+    # Restricciones de disponibilidad de ingredientes
+    for i in range(3,len(variables)):
+        modelo.Equation(variables[i] <= topes_de_ingredientes_puros[i-3])
 
     if test:
         modelo.Equation(oil==aceite)
         modelo.Equation(dra==dragon)
         modelo.Equation(horse==caballo)
-    #funcion objetivo
-    def f(oil,dra,horse):
-        return 40*oil + 70*dra + 30*horse + 0.2*oil*5 + 0.35*dra*5 + 0.45*horse*5
+        modelo.Equation(ing1==ingrediente1)
+        modelo.Equation(ing2==ingrediente2)
+        modelo.Equation(ing3==ingrediente3)
 
-    modelo.Minimize(f(oil,dra,horse))
+    #funcion objetivo
+    def f(oil,dra,horse, ingr1, ingr2, ingr3):
+        sol = np.array([oil,dra,horse, ingr1, ingr2, ingr3])
+        return modelo.sum(costos * sol) + costo_remanente * modelo.sum(remanente * sol)
+
+    modelo.Minimize(f(oil,dra,horse, ing1, ing2, ing3))
 
     try:
         modelo.solve(disp=False)
-        return modelo.options.OBJFCNVAL, [oil, dra, horse]
+        return modelo.options.OBJFCNVAL, [oil, dra, horse, ing1, ing2, ing3], modelo.options.OBJFCNVAL
     except:
-        return None, None
+        return None, None, f(aceite, dragon, caballo, ingrediente1, ingrediente2, ingrediente3)
 
 def targaryen_house_input():
     print('Según tus habilidades como alquimista,como se debería hacer la compra de los ingrediente')
     oil =int(input('Aceite de ballena: '))
     dra =int(input('Polvo de Dragon: '))
     horse =int(input('Piel de caballo:'))
-    return [oil, dra, horse]
+    ing1 =int(input('Ingrediente 1:'))
+    ing2 =int(input('Ingrediente 2:'))
+    ing3 =int(input('Ingrediente 3:'))
+    return [oil, dra, horse, ing1, ing2, ing3]
 
 # Poner a mano los argumentos dichos por los estudiantes o se pueden poner mediente input seteando los argumentos a None
 
@@ -561,12 +616,18 @@ argumentos_problema_3_equipo_1 = [
     0, # Aceite de ballena
     0, # Polvo de Dragón
     0, # Piel de caballo
+    0, # Ingrediente 1
+    0, # Ingrediente 2
+    0, # Ingrediente 3
 ]
 
 argumentos_problema_3_equipo_2 = [
     0, # Aceite de ballena
     0, # Polvo de Dragón
     0, # Piel de caballo
+    0, # Ingrediente 1
+    0, # Ingrediente 2
+    0, # Ingrediente 3
 ]
 
 problema_3 = ProblemManager(targaryen_house_solve, targaryen_house_input)
@@ -574,51 +635,49 @@ class_manager.register_result("Ejercicio 3 - Casa Targaryen", problema_3,
                                 argumentos_problema_3_equipo_1, 
                                 argumentos_problema_3_equipo_2)
 
-
+# %% [markdown]
 # ## 4. Casa Baratheon
 # 
-# Es hora de reunir todos los recursos y tropas. Para esto se conoce que hacen falta trasladar las armas, comida, soldados y fuego valiryo hacia diferentes puntos intermedios para finalmente llegar a Winterfell. El traslado está condicionado por diferentes situaciones, clima, calidad del camino, tipo de recurso, que hacen que se tenga un desgaste de los recursos en el traslado en dependencia del destino. Este desgaste se observa:
+# Es hora de reunir todos los recursos y tropas. Para esto se conoce que hacen falta trasladar las armas, comida, soldados y fuego valiryo desde Bravos, Pentos y Highgarden hacia Storm´s End, King´s Landing y Casterly Rock desde donde finalmente llegarán a Winterfell. El traslado está condicionado por diferentes situaciones, clima, calidad del camino, tipo de recurso, que hacen que se tenga un desgaste de los recursos en el traslado en dependencia del destino. Este desgaste se observa:
 # 
 # Armas:
 # 
-# | Lugares | 2.1  | 2.2  | 2.3  |
+# | Lugares | Storm's End  | King's Landing  | Casterly Rock  |
 # | ------- | ---- | ---- | ---- |
-# | 1.1     | 5    | 10   | 7    |
-# | 1.2     | 10   | 20   | 10   |
-# | 1.3     | 7    | 10   | 7    |
+# | Braavos     | 5    | 10   | 7    |
+# | Pentos     | 10   | 20   | 10   |
+# | Highgarden     | 7    | 10   | 7    |
 # 
 # Comida:
 # 
-# | Lugares | 2.1  | 2.2  | 2.3  |
+# | Lugares | Storm's End  | King's Landing  | Casterly Rock  |
 # | ------- | ---- | ---- | ---- |
-# | 1.1     | 25   | 20   | 15   |
-# | 1.2     | 20   | 17   | 10   |
-# | 1.3     | 15   | 10   | 5    |
+# | Braavos     | 25   | 20   | 15   |
+# | Pentos     | 20   | 17   | 10   |
+# | Highgarden     | 15   | 10   | 5    |
 # 
 # Soldados:
 # 
-# | Lugares | 2.1  | 2.2  | 2.3  |
+# | Lugares | Storm's End  | King's Landing  | Casterly Rock  |
 # | ------- | ---- | ---- | ---- |
-# | 1.1     | 10   | 7    | 7    |
-# | 1.2     | 7    | 10   | 9   |
-# | 1.3     | 7    | 9    | 8    |
+# | Braavos     | 10   | 7    | 7    |
+# | Pentos     | 7    | 10   | 9   |
+# | Highgarden     | 7    | 9    | 8    |
 # 
 # Fuego valiryo:
 # 
-# | Lugares | 2.1  | 2.2  | 2.3  |
+# | Lugares | Storm's End  | King's Landing  | Casterly Rock  |
 # | ------- | ---- | ---- | ---- |
-# | 1.1     | 30   | 25   | 25   |
-# | 1.2     | 25   | 5    | 5    |
-# | 1.3     | 25   | 5    | 5    |
+# | Braavos     | 30   | 25   | 25   |
+# | Pentos     | 25   | 5    | 5    |
+# | Highgarden     | 25   | 5    | 5    |
 # 
 # En total se quieren trasladar 51 000 armas, 285 000 unidades de comida, 60 000 soldados, 100 unidades de fuego valiryo.
 # 
 # 1. Diga dónde se tienen que asignar los recursos y tropas para que el desgaste del transporte sea lo menor posible.
 # 2. Para mitigar el desgaste de los caminos, estos tienen algunas restricciones sobre la cantidad de recursos que pueden ser transportados por ellos. Se tienen que transportar como mínimo en cada camino unas 35000 unidades de cualquier tipo de recusros o tropas. ¿Cuál sería la nueva asignación?
 
-# In[ ]:
-
-
+# %%
 # Ejercicio 4
 def baratheon_house_solve(recursos_caminos=None, preservar_caminos=False):
     
@@ -707,9 +766,9 @@ def baratheon_house_solve(recursos_caminos=None, preservar_caminos=False):
 
     try:
         modelo.solve(disp=False)
-        return modelo.options.OBJFCNVAL, _vars
+        return modelo.options.OBJFCNVAL, _vars, modelo.options.OBJFCNVAL
     except:
-        return None, None
+        return None, None, f(np.array(recursos_caminos).reshape((4,3,3)))
 
 def baratheon_house_input():
     names = ['armas', 'comida', 'soldados', 'fuego_valiryo']
@@ -807,9 +866,7 @@ class_manager.register_result("Ejercicio 4 a) - Casa Baratheon", problema_4,
                                 unfold=True)
 
 
-# In[ ]:
-
-
+# %%
 argumentos_problema_4_2_equipo_1 = [
     [ # Transporte de Armas
         [0,0,0],
@@ -864,7 +921,7 @@ class_manager.register_result("Ejercicio 4 b) - Casa Baratheon", problema_4,
                                 argumentos_problema_4_2_equipo_2,
                                 unfold=True)
 
-
+# %% [markdown]
 # ## 5. Casa Tully
 # 
 # La fuerza secundaria está esperando en las fortalezas Storm's End, King's Landing y Casterly Rock. Para hacer el viaje se tienen las siguientes rutas:
@@ -901,10 +958,7 @@ class_manager.register_result("Ejercicio 4 b) - Casa Baratheon", problema_4,
 # 
 # 1. Se necesitan trasladar la mayor cantidad de soldados a Winterfell de manera tal de que las rutas no pasen más de cierta cantidad de soldados. ¿De qué forma es posible hacer esto?
 
-# In[ ]:
-
-
-
+# %%
 # Ejercicio 5
 def tully_house_solve(assigned_soldiers=None):
     if assigned_soldiers is None:
@@ -1008,14 +1062,27 @@ def tully_house_solve(assigned_soldiers=None):
                 modelo.Equation(soldiers_ij[source][dest] == assigned_soldiers[index])
                 index+=1
 
+    def f(soldiers, model_sum=True):
+        if model_sum:
+            return modelo.sum([soldiers[place]["Winterfell"] for place in places])
+        else:
+            return sum([soldiers[place]["Winterfell"] for place in places])
+
     # Función objetivo
-    modelo.Maximize(modelo.sum([soldiers_ij[place]["Winterfell"] for place in places]))
+    modelo.Maximize(f(soldiers_ij))
 
     try:
         modelo.solve(disp=False)
-        return -modelo.options.OBJFCNVAL, [soldiers_ij[x][y] for x in places for y in places]
+        return -modelo.options.OBJFCNVAL, [soldiers_ij[x][y] for x in places for y in places], -modelo.options.OBJFCNVAL
     except:
-        return None, None
+        soldier_dict = {}
+        index = 0
+        for source in places:
+            soldier_dict[source] = {}
+            for dest in places:
+                soldier_dict[source][dest] = assigned_soldiers[index]
+                index+=1
+        return None, None, f(soldier_dict, False)
 
 def tully_house_input():
     print("Introduce los nombres de salida y destino y la cantidad de soldados a transportar separados por ,:")
@@ -1125,7 +1192,7 @@ class_manager.register_result("Ejercicio 5 - Casa Tully", problema_5,
                                 maxim=True,
                                 unfold=True)
 
-
+# %% [markdown]
 # ## 6. Casa Stark
 # 
 # Ya se encuentran todos los recursos en Winterfell, listos para la batalla, el frío y la oscuridad cubren todo. Los exploradores regresan de su misión informando que los caminantes blancos atacarán en 12 oleadas y calculan el estimado de fuerza de cada una de ellas:
@@ -1139,9 +1206,7 @@ class_manager.register_result("Ejercicio 5 - Casa Tully", problema_5,
 # 1. Realice un plan de lucha que permita ganar la batalla con el mínimo de costo posible.
 # 2. Para que Arya pueda dar el golpe final se tiene que tener en la última oleada una diferencia de poder ganadora para los caminantes blancos de 1000, para que el jefe se confíe y salga al campo de batalla. Teniendo esto en cuenta, ¿qué cambios le harías a la estrategia?
 
-# In[ ]:
-
-
+# %%
 # Ejercicio 6
 def stark_house_solve(waves_values=None, arya=False):
     if waves_values is None:
@@ -1179,9 +1244,11 @@ def stark_house_solve(waves_values=None, arya=False):
         """
         return modelo.sum(wave_strength_i[:k+1])
     
+    # Restricciones de variables
     for i in range(waves_amount-1):
         modelo.Equation(z_i(i) == positive_z_i[i] + negative_z_i[i])
 
+    # Restricciones de capacidad
     for i in range(waves_amount):
         modelo.Equation(all_men_k(i) - all_wave_strength_k(i) <= max_refuge_capacity)
         modelo.Equation(all_men_k(i) - all_wave_strength_k(i) >= 0)
@@ -1199,9 +1266,10 @@ def stark_house_solve(waves_values=None, arya=False):
 
     try:
         modelo.solve(disp=False)
-        return modelo.options.OBJFCNVAL, men_sent_wave_i
+        return modelo.options.OBJFCNVAL, men_sent_wave_i, modelo.options.OBJFCNVAL
     except:
-        return None, None
+        waves_zi = np.array([waves_values[i+1] - waves_values[i] for i in range(len(waves_values)-1)])
+        return None, None, sum(x if x >= 0 else 0.5 * -x for x in waves_zi)
 
 def stark_house_input():
     print("Introduce la cantidad de guerreros a enviar en cada oleada:")
@@ -1251,9 +1319,7 @@ class_manager.register_result("Ejercicio 6 a) - Casa Stark", problema_6,
                                 unfold=True)
 
 
-# In[ ]:
-
-
+# %%
 argumentos_problema_6_2_equipo_1 = [
     0, # Hombres enviados oleada 1
     0, # Hombres enviados oleada 2
@@ -1291,13 +1357,16 @@ class_manager.register_result("Ejercicio 6 b) - Casa Stark", problema_6,
                                 argumentos_problema_6_2_equipo_2,
                                 unfold=True)
 
-
+# %% [markdown]
 # # Conlcusión
 # 
 # Conteo de puntos y dar resultados
 
-# In[ ]:
-
-
+# %%
 class_manager.print_result()
+
+
+# %%
+
+
 

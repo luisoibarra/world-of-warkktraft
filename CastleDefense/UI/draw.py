@@ -1,3 +1,4 @@
+from castle_defense_discrete.castle import Recurso
 from ast import Global
 from multiprocessing import set_forkserver_preload
 import pygame
@@ -37,9 +38,9 @@ class Drawer:
         
         self.state = state
         self.screen = pygame.display.set_mode((self.WIDTH, self.HEIGHT),0,32)
-        self.home_image = self.load_image('CastleDefense/UI/sprites/home.jpg')
+        self.home_image = self.load_image('UI/sprites/home.jpg')
         self.home_image = pygame.transform.scale(self.home_image,(1300,700))
-        self.back_image = self.load_image('CastleDefense/UI/sprites/backImage.jpg')
+        self.back_image = self.load_image('UI/sprites/backImage.jpg')
         self.back_image = pygame.transform.scale(self.back_image,(1300,700))
         
         pygame.display.set_caption("Castle Defense")
@@ -92,9 +93,4 @@ def main():
     d = Drawer('')
     while True:
         d.update()
-    
-main()            
-            
-    
-   
     

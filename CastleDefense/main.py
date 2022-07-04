@@ -3,6 +3,7 @@ from castle_defense_discrete.castle_simulation import JuegoSimulacion
 from castle_defense_discrete.castle import *
 from castle_defense_discrete.castle_gekko import JuegoGEKKO
 from levels import NIVELES_DIFICIL, NIVELES_FACIL, NIVELES_MEDIO, NIVELES_TEST
+from castle_defense_discrete.draw import main as main_ui
 
 def juego1() -> JuegoGEKKO:
     """
@@ -99,4 +100,5 @@ def main():
     juego.correr()
 
 if __name__ == "__main__":
-    main()
+    # main()
+    main_ui()

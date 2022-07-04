@@ -53,9 +53,9 @@ class Drawer:
         
         self.state = state
         self.screen = pygame.display.set_mode((self.WIDTH, self.HEIGHT),0,32)
-        self.home_image = self.load_image('CastleDefense/UI/sprites/home.jpg')
+        self.home_image = self.load_image('UI/sprites/home.jpg')
         self.home_image = pygame.transform.scale(self.home_image,(1200,700))
-        self.back_image = self.load_image('CastleDefense/UI/sprites/backImage.jpg')
+        self.back_image = self.load_image('UI/sprites/backImage.jpg')
         self.back_image = pygame.transform.scale(self.back_image,(1200,700))
         
         pygame.init()
@@ -90,14 +90,14 @@ class Drawer:
     def draw_menu(self):
         init_pos = 434
         size = 190
-        back_image = self.load_image('CastleDefense/UI/sprites/resourceBack.png')
+        back_image = self.load_image('UI/sprites/resourceBack.png')
         back_image =  pygame.transform.scale(back_image,(size,50))
-        box = self.load_image('CastleDefense/UI/sprites/boxXL.png')
+        box = self.load_image('UI/sprites/boxXL.png')
         box = pygame.transform.scale(box,(self.WIDTH,63))
-        pasarTurno = self.load_image('CastleDefense/UI/sprites/pasarTurno.png')
+        pasarTurno = self.load_image('UI/sprites/pasarTurno.png')
         pasarTurno =  pygame.transform.scale(pasarTurno,(180,50))
         
-        opciones = self.load_image('CastleDefense/UI/sprites/opciones.png')
+        opciones = self.load_image('UI/sprites/opciones.png')
         opciones =  pygame.transform.scale(opciones,(180,50))
         
         self.screen.blit(box,(0,0))
@@ -107,7 +107,7 @@ class Drawer:
         font = pygame.font.SysFont("BookmanOldStyle", 20)
 
         for rec in  self.recursos:
-            rec_image = self.load_image ('CastleDefense/UI/sprites/r'+rec+'.png')
+            rec_image = self.load_image ('UI/sprites/r'+rec+'.png')
             rec_image = pygame.transform.scale(rec_image,(28,28))
             
             amount = font.render(str(self.recursos[rec].cantidad),True,self.color, (0,0,0,0)  )
@@ -132,7 +132,7 @@ class Drawer:
         for warrior in self.warriors:
             if self.warriors[warrior] > 0 :
                 
-                w_image =  self.load_image ('CastleDefense/UI/sprites/warrior'+warrior+'.png')
+                w_image =  self.load_image ('UI/sprites/warrior'+warrior+'.png')
                 w_image = pygame.transform.scale(w_image,size)
                 amount = font.render(str(self.warriors[warrior]),True, color  )
                 amount.set_colorkey((0,0,0), RLEACCEL)
@@ -148,7 +148,7 @@ class Drawer:
         size = (80,180)
         
         for i in range(2,7):
-            w_image =  self.load_image ('CastleDefense/UI/sprites/enemy'+str(i)+'.png')
+            w_image =  self.load_image ('UI/sprites/enemy'+str(i)+'.png')
             w_image = pygame.transform.scale(w_image,size)
             self.screen.blit(w_image,(init_pos,self.HEIGHT-180))
             init_pos += size[0]
